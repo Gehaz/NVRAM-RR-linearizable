@@ -1,0 +1,89 @@
+\documentclass{sig-alternate-2013}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{enumerate}
+\usepackage{paralist}
+
+% theorem styles
+
+\newtheorem{claim}{Claim}
+\newtheorem{claim-subsection}{Claim}[subsection]
+\newtheorem{observation}{Observation}
+\newtheorem{corollary}{Corollary}
+\newtheorem{definition}{Definition}
+\newtheorem{exercise}{Exercise}
+\newtheorem{lemma}{Lemma}
+\newtheorem{note}{Note}
+\newtheorem{obs}{Observation}
+\newtheorem{problem}{Problem}
+\newtheorem{property}{Property}
+\newtheorem{proposition}{Proposition}
+\newtheorem{prop}{Proposition}
+\newtheorem{fact}{Fact}
+\newtheorem{invariant}{Invariant}
+\newtheorem{question}{Question}
+\newtheorem{ru}{Rule}
+\newtheorem{solution}{Solution}
+\newtheorem{theorem}{Theorem}
+
+
+
+
+\newfont{\mycrnotice}{ptmr8t at 7pt}
+\newfont{\myconfname}{ptmri8t at 7pt}
+\let\crnotice\mycrnotice%
+\let\confname\myconfname%
+
+
+\clubpenalty=10000
+\widowpenalty = 10000
+
+\begin{document}
+	
+	\title{NVRAM - response recover linearzability \thanks{
+                Partially supported by the Israel Science Foundation
+                (grants 1227/10, 1749/14) and by the Lynne and William Frankel Center for Computing Science at Ben-Gurion University.}}
+	\subtitle{[Extended Abstract]}
+	
+	\numberofauthors{3}
+	
+	\author{
+		% 1st. author
+		\alignauthor
+		Hagit Attiya\\
+		\affaddr{Department of Computer-Science}\\
+		\affaddr{Technion}\\
+		\affaddr{Haifa, Israel}\\
+		\email{hagit@cs.technion.ac.il}
+		% 2nd. author
+		\alignauthor
+		Ohad Ben-Baruch\\
+		\affaddr{Department of Computer-Science}\\
+		\affaddr{Ben-Gurion University of the Negev}\\
+		\affaddr{Be'er Sheva, Israel}\\
+		\email{ohadben@post.bgu.ac.il}	
+		% 3rd. author
+		\alignauthor
+		Danny Hendler\\
+		\affaddr{Department of Computer-Science}\\
+		\affaddr{Ben-Gurion University of the Negev}\\
+		\affaddr{Be'er Sheva, Israel}\\
+		\email{hendlerd@cs.bgu.ac.il}
+	}
+	
+	\maketitle	
+	
+	\input{abstract}
+	\input{introduction}
+	\input{Definitions&Model}
+	\input{RecoverableBaseObjects}
+	\input{discussion}
+
+%	\newpage
+
+	\bibliographystyle{abbrv}
+	\bibliography{references}
+
+
+\end{document}
