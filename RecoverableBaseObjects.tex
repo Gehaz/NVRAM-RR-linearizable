@@ -2,3 +2,64 @@
 \section{Recoverable Base Objects}
 \label{section: Recoverable Base Objects}
 
+The correctness properties variants discussed in section \ref{Correctness properties} does not need to consider primitives, as any atomic operation satisfies any of the properties. Unlike it, RR-linearizability is not satisfied by primitives since the respond of the primitive is lost in case of a failure. Therefore, there is a need to supply each primitive with an implementation as well as a recovery code. A system which supply recoverable primitives can be used to implement any object in a recoverable way - in case of a crash the process will simply recover the last atomic operation it executed before the crash. In case the operation is aborted, the process will reissue it. After that, it can continue and execute the remaining code safely. This observation focus our attention to implementation of primitives in a recoverable manner.
+
+In the following section we present RR-linearizable implementations for well known primitives, as well as presenting impossibility result for others. We focus our attention on bounded wait-free implementations, that is, the number of steps a process takes when executing the recovery code in the absence of a failure is finite and bounded by a known constant (may be a function of n, the number of processes in the system), regardless of the other processes steps and the failures the process experienced so far. In addition, we would like the recovery code to use a finite number of variables.
+The fact that RR-linearizabilty allows us to swift the linearization point of an operation to after the crash is used to recover after a primitive failure.
+
+\paragraph*{Read}
+
+The process simply aborts the read upon recovering. Since read does not affect other processes, aborting the operation does not damage the linearizability of the program.
+
+\paragraph*{Write}
+Write instruction is "wrap" with code such that in case of a failure the extra data will be used for recovering. For an instruction writing value $x$ to variable $R$ by process $p$, we provide the following implementation. We use the convention of capital letters names for shared memory variables, and small letters for local ones. In the following code, $R_p$ is a variable in the memory designated for process $p$.
+
+\begin{algorithm}
+	\caption{Write}\label{euclid}
+	\begin{algorithmic}[1]
+		\Procedure{write operation}{}
+		\State $res \gets R$
+		\State $R_{p} \gets res$
+		\State $R \gets x$
+		\EndProcedure
+		
+		\Procedure{recovery code}{}
+		\If {$R_{p} == R$} \Return abort
+		\EndIf
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+For simplicity, we write the recovery code as a single instruction, although it needs to be written as several instructions, as it accesses two different locations in the shared memory. Since $R_p$ is accessed by $p$ only, the point where $p$ reads $R$ determines the recovery code outcome. Moreover, in case of a failure along the recovery code, the process can simply restart it, as it contains only reads.
+
+The intuition for correctness is that if there was a write to $R$ between the two reads of $p$ (at line 2, and at the recovery code), then either this write is by $p$, and we can linearize it at the point where it took affect, or that there was a write by some other process, and we can linearize the write of $p$ just before it. Hence, the real write "overwrite" $p$'s write, and the rest of the processes can not distinguish between the two situations. Therefore, in case of a failure before line 4, $p$ will simply abort upon recovering, and in case of a failure at line 4, $p$ will execute the recovery code.
+
+The above analysis ignores the ABA problem. It might be that $p$ reads the same value from $R$, even though there was a write to $R$ in between the two different reads. To overcome this problem, we can augment any value written with the writing process's id, and a sequential number (each process will have its own sequential number). This way, reading the same value guarantee that no write to $R$ took place between the two different reads.
+
+
+\paragraph*{Compare-and-Swap}
+
+A Compare-and-Swap (CAS) object supports a single operation which atomically compares the value of the shared variable with its first parameter, and if they are equal, sets the value of the variable to its second parameter.
+At a high level, a process $p$ first reads the CAS variable. If it observes a value different then $old$, then it return false. In such case, the operation can be linearized at the time of the read. Otherwise, $p$ announce the process which is value was stored in the CAS object, that it reads its value, by writing to a designated memory, and only then it can try and apply the CAS operation to the object. This way, if $p$ fails after a successful CAS operation, a different process that wants to change the value of the CAS, first needs to announce $p$ his CAS was successful. Therefore, upon recovery, $p$ can identify if its CAS took affect by reading $C$, and looking for an info by different process that have seen $p$'s value.
+\begin{algorithm}
+	\caption{Compare-and-Swap}\label{euclid}
+	\begin{algorithmic}[1]
+		\Procedure{cas operation}{}
+		\State $<id,val> \gets C$
+		\If {$val \neq old$}
+		\State \Return false
+		\EndIf
+		\State $R[id][i] \gets val$
+		\State $res \gets C.cas(<id,val>, <i,new>)$
+		\EndProcedure
+		
+		\Procedure{recovery code}{}
+		\State Read C, R[i][*]
+		\If {$<id,val>$ appears in C, or $val$ appears in R[i][*]}
+		\State \Return true
+		\Else {}
+		\State \Return false
+		\EndIf
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
