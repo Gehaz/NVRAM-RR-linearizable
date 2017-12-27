@@ -1,3 +1,140 @@
-\begin{thebibliography}{}
+\begin{thebibliography}{10}
+
+\bibitem{Aguilera2003StrictLA}
+M.~K. Aguilera and S.~Fr{\o}lund.
+\newblock Strict linearizability and the power of aborting.
+\newblock In {\em Tech. Rep. HPL-2003-241}, 2003.
+
+\bibitem{AttiyaGHK09}
+H.~Attiya, R.~Guerraoui, D.~Hendler, and P.~Kuznetsov.
+\newblock The complexity of obstruction-free implementations.
+\newblock {\em J. {ACM}}, 56(4):24:1--24:33, 2009.
+
+\bibitem{DBLP:conf/stoc/AttiyaHW08}
+H.~Attiya, D.~Hendler, and P.~Woelfel.
+\newblock Tight {RMR} lower bounds for mutual exclusion and other problems.
+\newblock In {\em Proceedings of the 40th Annual {ACM} Symposium on Theory of
+  Computing ({STOC})}, pages 217--226, 2008.
+
+\bibitem{DBLP:conf/opodis/BerryhillGT15}
+R.~Berryhill, W.~M. Golab, and M.~Tripunitara.
+\newblock Robust shared objects for non-volatile main memory.
+\newblock In {\em 19th International Conference on Principles of Distributed
+  Systems, {OPODIS}}, pages 20:1--20:17, 2015.
+
+\bibitem{BoehmC-ISMM2016}
+H.-J. Boehm and D.~R. Chakrabarti.
+\newblock Persistence programming models for non-volatile memory.
+\newblock In {\em Proceedings of the 2016 ACM SIGPLAN International Symposium
+  on Memory Management}, ISMM, pages 55--67, 2016.
+
+\bibitem{CoburnCAGGJW-Asplos2011}
+J.~Coburn, A.~M. Caulfield, A.~Akel, L.~M. Grupp, R.~K. Gupta, R.~Jhala, and
+  S.~Swanson.
+\newblock {NV-Heaps}: Making persistent objects fast and safe with
+  next-generation, non-volatile memories.
+\newblock In {\em Proceedings of the Sixteenth International Conference on
+  Architectural Support for Programming Languages and Operating Systems},
+  ASPLOS, pages 105--118, 2011.
+
+\bibitem{Erez-et-al-DISC-17}
+M.~Friedman, M.~Herlihy, V.~Marathe, and E.~Petrank.
+\newblock Brief announcement: A persistent lock-free queue for non-volatile
+  memory.
+\newblock In {\em Distributed Computing - 31st International Symposium
+  ({DISC})}, 2017.
+
+\bibitem{DBLP:conf/podc/GolabH17}
+W.~M. Golab and D.~Hendler.
+\newblock Recoverable mutual exclusion in sub-logarithmic time.
+\newblock In {\em Proceedings of the {ACM} Symposium on Principles of
+  Distributed Computing, {PODC}}, pages 211--220, 2017.
+
+\bibitem{gr:rme}
+W.~M. Golab and A.~Ramaraju.
+\newblock Recoverable mutual exclusion: [extended abstract].
+\newblock In {\em Proceedings of the 2016 {ACM} Symposium on Principles of
+  Distributed Computing, {PODC}}, pages 65--74, 2016.
+
+\bibitem{DBLP:conf/icdcs/GuerraouiL04}
+R.~Guerraoui and R.~R. Levy.
+\newblock Robust emulations of shared memory in a crash-recovery model.
+\newblock In {\em 24th International Conference on Distributed Computing
+  Systems {(ICDCS})}, pages 400--407, 2004.
+
+\bibitem{herlihy91waitfree}
+M.~Herlihy.
+\newblock Wait-free synchronization.
+\newblock {\em {ACM} Trans. Program. Lang. Syst.}, 13(1):124--149, 1991.
+
+\bibitem{DBLP:conf/icdcs/HerlihyLM03}
+M.~Herlihy, V.~Luchangco, and M.~Moir.
+\newblock Obstruction-free synchronization: Double-ended queues as an example.
+\newblock In {\em 23rd International Conference on Distributed Computing
+  Systems ({ICDCS}))}, pages 522--529, 2003.
+
+\bibitem{HerlihyLMS03}
+M.~Herlihy, V.~Luchangco, M.~Moir, and W.~N.~S. III.
+\newblock Software transactional memory for dynamic-sized data structures.
+\newblock In {\em Proceedings of the Twenty-Second {ACM} Symposium on
+  Principles of Distributed Computing, {PODC}}, pages 92--101, 2003.
+
+\bibitem{herlihyWingLinearizability}
+M.~Herlihy and J.~M. Wing.
+\newblock Linearizability: {A} correctness condition for concurrent objects.
+\newblock {\em {ACM} Trans. Program. Lang. Syst.}, 12(3):463--492, 1990.
+
+\bibitem{DBLP:conf/wdag/IzraelevitzMS16}
+J.~Izraelevitz, H.~Mendes, and M.~L. Scott.
+\newblock Linearizability of persistent memory objects under a
+  full-system-crash failure model.
+\newblock In {\em Distributed Computing - 30th International Symposium,
+  {DISC}}, pages 313--327, 2016.
+
+\bibitem{Jayanti-DISC-17}
+P.~Jayanti and A.~Joshi.
+\newblock Recoverable {FCFS} mutual exclusion with wait-free recovery.
+\newblock In {\em Distributed Computing - 31st International Symposium
+  ({DISC})}, 2017.
+
+\bibitem{KolliPSCW-Asplos2016}
+A.~Kolli, S.~Pelley, A.~Saidi, P.~M. Chen, and T.~F. Wenisch.
+\newblock High-performance transactions for persistent memories.
+\newblock In {\em Proceedings of the Twenty-First International Conference on
+  Architectural Support for Programming Languages and Operating Systems},
+  ASPLOS, pages 399--411, 2016.
+
+\bibitem{LamportSC}
+L.~Lamport.
+\newblock How to make a correct multiprocess program execute correctly on a
+  multiprocessor.
+\newblock {\em {IEEE} Trans. Computers}, 46(7):779--782, 1997.
+
+\bibitem{MaratheSBH-HotStorage2017}
+V.~J. Marathe, M.~Seltzer, S.~Byan, and T.~Harris.
+\newblock Persistent memcached: Bringing legacy code to byte-addressable
+  persistent memory.
+\newblock In {\em 9th USENIX Workshop on Hot Topics in Storage and File Systems
+  (HotStorage)}, 2017.
+
+\bibitem{MichaelS-PODC1996}
+M.~M. Michael and M.~L. Scott.
+\newblock Simple, fast, and practical non-blocking and blocking concurrent
+  queue algorithms.
+\newblock In {\em Proceedings of the fifteenth annual ACM symposium on
+  Principles of distributed computing}, pages 267--275, 1996.
+
+\bibitem{VenkataramanTRC-FAST2011}
+S.~Venkataraman, N.~Tolia, P.~Ranganathan, and R.~H. Campbell.
+\newblock Consistent and durable data structures for non-volatile
+  byte-addressable memory.
+\newblock In {\em FAST}, volume~11, pages 61--75, 2011.
+
+\bibitem{VolosTS-Asplos2011}
+H.~Volos, A.~J. Tack, and M.~M. Swift.
+\newblock Mnemosyne: Lightweight persistent memory.
+\newblock In {\em Proceedings of the Sixteenth International Conference on
+  Architectural Support for Programming Languages and Operating Systems},
+  ASPLOS, pages 91--104, 2011.
 
 \end{thebibliography}

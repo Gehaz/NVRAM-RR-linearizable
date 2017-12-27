@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2017.2.23)  26 DEC 2017 19:42
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2017.2.23)  27 DEC 2017 15:27
 entering extended mode
 **article.tex
 (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.tex
@@ -274,18 +274,18 @@ Package: paralist 2013/06/09 v2.4 Extended list environments
 LaTeX Warning: Label `euclid' multiply defined.
 
 )
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 42.
-LaTeX Font Info:    ... okay on input line 42.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 42.
-LaTeX Font Info:    ... okay on input line 42.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 42.
-LaTeX Font Info:    ... okay on input line 42.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 42.
-LaTeX Font Info:    ... okay on input line 42.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 42.
-LaTeX Font Info:    ... okay on input line 42.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 42.
-LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 44.
+LaTeX Font Info:    ... okay on input line 44.
  ("C:\Program Files\MiKTeX 2.9\tex\context\base\supp-pdf.mkii"
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count137
@@ -345,65 +345,101 @@ Package grfext Info: Graphics extension search list:
 G,.JBIG2,.JB2,.eps]
 (grfext)             \AppendGraphicsExtensions on input line 452.
 )
-LaTeX Font Info:    Try loading font information for U+msa on input line 75.
+LaTeX Font Info:    Try loading font information for U+msa on input line 77.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 75.
+LaTeX Font Info:    Try loading font information for U+msb on input line 77.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for U+lasy on input line 75.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 77.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\base\ulasy.fd"
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-Underfull \hbox (badness 1342) in paragraph at lines 75--75
+Underfull \hbox (badness 1342) in paragraph at lines 77--77
 [][]\T1/aer/m/n/9 Partially sup-ported by the Is-rael Sci-ence Foun-da-tion
  []
 
 (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\abstract.tex)
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\introduction.tex)
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\Definitions&Model.tex)
-
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\RecoverableBaseObjects
-.tex
-
-LaTeX Warning: Reference `Correctness properties' on page \thepage  undefined o
-n input line 5.
-
-
-Overfull \hbox (9.05888pt too wide) in paragraph at lines 5--6
-\T1/aer/m/n/9 tion sat-is-fies any of the prop-er-ties. Un-like it, RR-lineariz
-ability
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\introduction.tex
+Overfull \hbox (2.61539pt too wide) in paragraph at lines 14--23
+[]\T1/aer/m/n/9 Asynchrony is also re-lated to re-li-a-bil-ity, since asyn-chro
+nous
  []
 
-[1{C:/Users/ohadben/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
+
+Overfull \hbox (3.3459pt too wide) in paragraph at lines 14--23
+\T1/aer/m/n/9 al-go-rithms that pro-vide non-block-ing progress prop-er-ties (e
+.g.,
+ []
 
 
-])
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\discussion.tex)
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.bbl) [2
+Overfull \hbox (13.94012pt too wide) in paragraph at lines 55--63
+[]\T1/aer/m/n/9 Recent de-vel-op-ments in non-volatile main mem-ory (NVRAM)
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [1{C:/Users/ohadben/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
+
 
 ]
+Overfull \hbox (8.28735pt too wide) in paragraph at lines 81--86
+[]\T1/aer/m/n/9 Formulate an ab-stract model of NVRAM shared-memory
+ []
+
+
+Overfull \hbox (1.36452pt too wide) in paragraph at lines 81--86
+\T1/aer/m/n/9 mul-ti-pro-ces-sors, to-gether with cor-rect-ness and progress
+ []
+
+)
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\Definitions&Model.tex
+Overfull \hbox (2.44429pt too wide) in paragraph at lines 101--1
+\T1/aer/m/n/9 First, we briefly de-scribe the stan-dard shared-memory model.
+ []
+
+
+Overfull \hbox (10.6005pt too wide) in paragraph at lines 11--31
+\T1/aer/m/n/9 Mod-ern ar-chi-tec-tures also pro-vide stronger atomic \T1/aer/m/
+it/9 read-modify-
+ []
+
+
+Overfull \hbox (4.81259pt too wide) in paragraph at lines 57--61
+\T1/aer/m/n/9 di-tions un-der which op-er-a-tions on a con-cur-rent data-struct
+ure
+ []
+
+[2])
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\RecoverableBaseObjects
+.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+)
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\discussion.tex
+Underfull \vbox (badness 5504) has occurred while \output is active []
+
+ [3])
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.bbl) [4]
 (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.aux)
-
-LaTeX Warning: There were undefined references.
-
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 3685 strings out of 493921
- 48198 string characters out of 3147276
- 112092 words of memory out of 3000000
- 6867 multiletter control sequences out of 15000+200000
+ 3708 strings out of 493921
+ 48691 string characters out of 3147276
+ 115184 words of memory out of 3000000
+ 6890 multiletter control sequences out of 15000+200000
  58478 words of font info for 75 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 41i,10n,28p,915b,291s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 41i,10n,28p,919b,289s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/fontname/8r.enc}<C:/Program File
 s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx9.pfb><C:/Program Files/MiKTeX 
 2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Program Files/MiKTeX 2.9/fon
@@ -416,9 +452,9 @@ ram Files/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Program Files/MiKT
 eX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/t
 ype1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/ut
 mr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on article.pdf (2 pages, 154195 bytes).
+Output written on article.pdf (4 pages, 186046 bytes).
 PDF statistics:
- 62 PDF objects out of 1000 (max. 8388607)
+ 68 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -2,3 +2,172 @@
 \section{Model and Definitions}
 \label{section: Model}
 
+\subsection{Standard Shared-Memory Model}
+
+\paragraph{Base Objects and Primitive Operations}
+Concurrent applications are programs that use \emph{base objects}.
+In the simplest case, these are the shared memory locations provided by the multi-core system.
+
+The system's hardware or operating system provide \emph{primitive operations} that can be applied to memory locations. The simplest primitives, which are always assumed,
+are the familiar \emph{read} and \emph{write} operations,
+also called \emph{load} and \emph{store}.
+%It has been shown \cite{herlihy91waitfree} that reads and writes alone
+%cannot support fault-tolerant implementations of even
+%the most basic data structures, like queues and stacks. This and other evidence on the relative weakness of
+Modern architectures also provide stronger atomic \emph{read-modify-write} primitives. The most notable of these is \emph{compare-and-swap} (abbreviated \textit{CAS}), which takes three arguments: a memory address, an old value, and a new value. If the address stores the old value, it is replaced with the new value; otherwise it is unchanged. The success or failure of this operation is then reported back to the program.
+%It is crucial that this operation is executed atomically; thus an algorithm can read a datum from memory, modify it, and write it back
+%only if no other thread modified it in the meantime.
+%
+%To exemplify the use of the \textit{CAS} operation, consider the following implementation of a concurrent \emph{counter} object. A counter supports a single operation \texttt{INC}, which atomically increments the counter value by $1$ and returns its previous value. Using \textit{CAS}, the \texttt{INC} operation can be implemented by reading the current
+%counter value (old value), adding 1, and then using \textit{CAS} for attempting to update the counter. If no other
+%thread modifies the counter between the read and \textit{CAS} operations, the \textit{CAS} will succeed, and the counter will be updated. However, if a concurrent modification does occur, the \textit{CAS} will fail, and the thread
+%will repeatedly retry the update (by first reading the new value of the counter) until it is successful. This algorithm is nonblocking but not wait-free, since other threads may keep
+%incrementing the counter and make our thread repeatedly fail.
+%
+%\textit{CAS} can be used, together with reads and writes,
+%to implement any object in a wait-free manner~\cite{herlihy91waitfree}.
+%It has consequently became a synchronization primitive of choice, and hardware support for
+%it is provided in many multiprocessor architectures, e.g.,~\cite{Itanium2001,Motorola86,Sparc}.
+
+Another example of a widely-implemented strong primitive is \emph{fetch-and-add}, which takes a memory address and an integer as its two arguments. When applied, it atomically adds the integer argument to the value stored at the memory address and returns the previous value.
+%A concurrent counter can be trivially implemented by using a single shared variable that supports the \emph{fetch-and-inc} operation.
+
+%Although atomic read-modify-write primitives, such as CAS and \emph{fetch-and-inc}, are extremely useful for %inter-thread synchronization, they are typically substantially slower than regular reads and writes.
+%On many shared-memory multiprocessors,
+%they cause the execution of a memory fence
+%(see, e.g., \cite[Section 8.1.2.2]{intelsys}).
+
+\paragraph{Correctness Conditions}
+When the application implements a concurrent data structure, it is necessary to specify its \emph{semantics}, namely, the properties provided by values it returns, which
+determine the feasibility and complexity of implementing it. The \emph{correctness} condition of a concurrent data structure specifies how to derive the semantics of concurrent implementations of the data structure from the corresponding \emph{sequential specification} of the data structure.
+This requires to disambiguate the expected results of concurrent operations on
+the data structure.
+
+Two common ways to do so are \emph{sequential consistency}~\cite{LamportSC}
+and \emph{linearizability}~\cite{herlihyWingLinearizability}.
+Both require that the values returned by the operations appear to have been returned by a sequential
+execution of the same operations; sequential consistency only requires this order to be consistent with
+the order in which each individual thread invokes the operations, while linearizability further requires
+this order to be consistent with the real-time order of non-overlapping operations. The standard shared-memory model assumes that shared memory is linearizable or at least sequentially consistent.
+
+\remove{%%%This abstracts away the fact that in real-world systems, main memory is not even sequentially consistent. This abstraction facilitated, however, capturing many of the theoretical limitations of real-world systems, as well as devising concurrent algorithms that can be adapted to work on real-world systems relatively easily (e.g. by adding barrier instructions wherever required).
+}%%% END REMOVE
+
+\paragraph{Progress Guarantees}
+Progress (also called \emph{liveness}) guarantees specify the conditions under which operations on a concurrent data-structure terminate. With \emph{blocking} (lock-based) implementations, the failure of a single thread may halt the progress of all other threads, if the thread fails while holding a lock. Consequently, the progress of blocking implementations can be guaranteed only when every participating thread is \emph{live}. (A thread is live if, whenever it begins executing an algorithm, it continues to take steps until the algorithm terminates.)
+%However, even blocking algorithms are expected to be \emph{weakly progressive}~\cite{DBLP:conf/popl/GuerraouiK09},
+%guaranteeing that an operation that does not encounter conflicts terminates successfully.
+%[[Took out definition of \emph{weakly progressive}.]]
+
+When locks are not used, threads should be able to make progress despite failures of other threads.
+There are several formal definitions capturing this intuitive requirement.
+The strongest liveness guarantee, \emph{wait-freedom}~\cite{herlihy91waitfree},
+assures that every operation performed by a thread completes within
+a finite number of its own steps, regardless of the failures of other threads.
+%\emph{Lock-free} algorithms \cite{herlihy91waitfree} may be unfair to individual threads, and only guarantee that \emph{some} operation completes within a finite number of steps, regardless of thread failures. Clearly, all
+%wait-free algorithms are lock-free, but, in general, a lock-free algorithm is not wait-free.
+%
+%\remove{
+%\emph{Nonblocking} algorithms \cite{herlihy91waitfree} (also called \emph{lock-free})
+%may be unfair to individual threads, and only guarantee that \emph{some} operation completes within a finite number of steps, regardless of thread failures. Clearly, all
+%wait-free algorithms are nonblocking, but, in general, a nonblocking algorithm is not wait-free.
+%[[[We can skip this paragraph.]]]}
+%%
+The weaker \emph{obstruction-freedom} guarantee~\cite{AttiyaGHK09,HerlihyLMS03, DBLP:conf/icdcs/HerlihyLM03}
+ensures only that if a thread executes in isolation (from some point on),
+without interleaved steps of other threads,
+then it will complete its operation within a finite number of steps.
+%Obstruction-free algorithms are also weakly progressive.
+%[[Took out reference to weakly progressive.]]
+%Wait-free, lock-free and obstruction-free algorithms fall under the category of \emph{nonblocking} algorithms \cite{herlihy91waitfree}, algorithms that ensure progress while avoiding the use of locks.
+%All wait-free algorithms are also obstruction-free, but the converse does not hold, in general.
+
+
+\subsection{Crash-Recovery Model}
+\label{subsec:progressCorrectness}
+
+Linearizability is ill-equipped to specify the correctness criteria for
+implementations that support crash-recovery failures,
+since linearizability has no notion of an aborted or failed operation,
+and requires that a process finish one operation before it invokes the next.
+Extended versions of linearizability or, more generally,
+alternative definitions are required for
+specifying correctness for such implementations.
+%[[it is done using an extension of linearizability.]]
+
+Aguilera and Fr{\o}lund~\cite{Aguilera2003StrictLA}
+proposed \emph{strict linearizability} as a correctness condition
+for persistent concurrent objects,
+which treats the crash of a process as a response,
+either successful or unsuccessful, to the interrupted operation.
+A successful response means that the operation takes effect at some point
+between its invocation and the crash failure,
+and an unsuccessful response means that the operation does not take effect at all.
+Strict linearizability preserves both \emph{locality}~\cite{herlihy91waitfree}
+and program order.
+However, they proved that it precludes the implementation of
+some wait-free objects for certain machine models:
+there is no wait-free implementations of multi-reader single-writer (MRSW)
+registers from single-reader single-writer (SRSW) registers under strict linearizability.
+
+Guerraoui and Levy~\cite{DBLP:conf/icdcs/GuerraouiL04}
+proposed \emph{persistent atomicity}.
+It is similar to strict linearizability, but allows an operation
+interrupted by a failure to take effect before
+the subsequent invocation of the same process, possibly after the failure.
+They also proposed \emph{transient atomicity},
+which relaxes this criterion even further and allows an interrupted operation
+to take effect before the subsequent write response of the same process.
+Both conditions ensure that the state of an object will be consistent
+in the wake of a crash, but they do not provide locality:
+correct histories of separate objects, when merged,
+will not necessarily yield a correct composite history.
+
+Berryhill et al.~\cite{DBLP:conf/opodis/BerryhillGT15} proposed an alternative
+condition, called \emph{recoverable linearizability},
+which achieves locality but may sacrifice program order after a crash.
+It is a relaxed version of persistent atomicity,
+which requires the operation to be linearized or aborted before
+any subsequent linearization by the pending thread on that same object.
+
+Izraelevitz et al.~\cite{DBLP:conf/wdag/IzraelevitzMS16} considered
+a real-world failure model, in which processes are assumed to fail together,
+as part of a full-system crash.
+Under this model, persistent atomicity and recoverable linearizability
+are indistinguishable (and thus local).
+The term \emph{durable linearizability} was used to refer to this merged
+consistency condition under the restricted failure model.
+
+%Berryhill et al. proposed \emph{recoverable linearizability} (or \emph{R-linearizability}) %\cite{DBLP:conf/opodis/BerryhillGT15}, a correctness condition that allows an operation to be linearized after %the failure that interrupted it. R-linearizability satisfies locality and also maintains program order.
+
+
+\remove{%%%%%%%%%%
+	\subsection{Complexity Measures}
+	
+	Concurrent algorithms are typically evaluated according to traditional measures of space complexity and (typically worst-case) step complexity: the number of memory locations used, and the number of steps taken in an execution of an implemented operation.
+	
+	%Sometimes, these measures do not suffice to accurately evaluate implementations and additional
+	%measures should be used.
+	%; for example, the implementation of a counter using \textit{fetch-and-inc}, mentioned above, has
+	%For example, when all threads access the same memory location,
+	%a large concentration of primitives are applied on the same base object,
+	%but the traditional step complexity is exactly $1$.
+	%The cost is more accurately captured by the number of \emph{memory stalls}
+	%incurred by a thread \cite{DBLP:journals/jacm/DworkHW97},
+	%since concurrent (modifying) operations to the same base object are serialized.
+	%While this measure is an abstraction of real architectures,
+	%it is considered accurate enough to predict the delay
+	%incurred by the last primitive to take effect.
+	
+	%While step complexity is a reasonable measure for algorithms that do not use locks, it is
+	Step complexity is problematic as a measure for busy-wait
+	blocking synchronization because, in this case,
+	a thread may perform an unbounded number of memory accesses
+	while busy-waiting for another thread holding the lock.
+	Indeed, Alur and Taubenfeld \cite{Alur-Taubenfeld-mutex-results} have shown that even the first thread to enter the critical section can be made to perform an unbounded number of accesses. Instead, the time complexity of blocking algorithms is typically measured by counting only \emph{remote memory references} (RMRs), i.e., memory accesses that traverse the processor-to-memory interconnect.
+	
+	%Contemporary shared-memory mutual exclusion research focuses on local-spin algorithms, in which all
+	%busy-waiting is done by means of read-only loops that repeatedly
+	%test locally accessible variables, and uses the RMRs metric \cite{anderson-sharedmemory}.
+	
+} %%%%%%%%%%% END REMOVE

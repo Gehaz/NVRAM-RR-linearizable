@@ -1,3 +1,108 @@
 
 \section{Introduction}
 
+\emph{Shared-memory multiprocessors} are now prevalent anywhere from
+high-end server machines, through desktop and laptop computers to smartphones,
+accelerating the shift to concurrent, multi-threaded software.
+Concurrent software involves a collection of threads,
+each running a separate piece of code,
+possibly on a different core.
+Since threads may be delayed because of a variety of reasons
+(such as cache-misses, interrupts, page-faults, and scheduler preemption),
+shared-memory multiprocessors are \emph{asynchronous} in nature.
+
+Asynchrony is also related to reliability, since asynchronous algorithms
+that provide nonblocking progress properties (e.g., lock-freedom and wait-freedom)
+in an asynchronous environment with reliable processes continue to provide
+the same progress properties when \emph{crash failures} are introduced.
+Informally speaking, this property holds because a process that crashes
+permanently at an arbitrary point in the execution of its algorithm
+is indistinguishable to the other processes from one that is merely very slow.
+Owing to its simplicity and intimate relationship with asynchrony, the crash-failure
+model is almost ubiquitous in the treatment of non-blocking shared memory algorithms.
+
+The attention to the crash-failure model has so far mostly neglected the \emph{crash-recovery} model,
+in which a failed process may be resurrected after it crashes.
+The reason is that the crash-recovery model is poorly matched to multi-core
+architectures with volatile SRAM-based caches and DRAM-based main memories:
+Any state stored in main memory is lost entirely in the event of a system crash
+or power loss, and recording recovery information in non-volatile secondary storage
+(e.g., on a hard disk drive or solid state drive)
+imposes overheads that are unacceptable for performance-critical tasks,
+such as synchronizing threads inside the operating system kernel.
+
+This separation between volatile main memory and non-volatile secondary storage
+has led to a partitioning of the program state into operational data stored using in-memory data structures,
+and recovery data stored using sequential on-disk structures such as transaction logs.
+In the event of a system-wide failure, such as a power outage, in-memory data structures are
+lost and must be reconstructed entirely from the recovery data, making the software system
+that relies on them temporarily unavailable.
+As a result, the design of in-memory data structures emphasizes disposable
+constructs optimized for parallelism,
+in contrast to the structures that hold recovery data, which cannot be discarded upon a failure
+and which benefit less from parallelism since their performance is limited by the secondary storage.
+
+\remove{%%%%%%%%%%%%%%
+	Recent developments in non-volatile main memory (NVRAM) media foreshadow the eventual
+	convergence of primary and secondary storage into a single layer in the memory hierarchy that
+	combines the performance benefits of conventional main memory with the durability of secondary storage.
+	Traditional log-based recovery techniques can be applied correctly in such systems but fail to take full
+	advantage of the parallelism enabled by allowing processing cores to access recovery data
+	directly using memory operations rather than performing slow block transfers from secondary storage.
+	As a result, harnessing the performance benefits of NVRAM-based platforms requires a
+	careful rethinking of recovery mechanisms.} %%%%%%%%% END REMOVE
+
+Recent developments in non-volatile main memory (NVRAM) media foreshadow
+the eventual convergence of primary and secondary storage into
+a single layer in the memory hierarchy, combining the performance benefits
+of conventional main memory with the durability of secondary storage.
+Traditional log-based recovery techniques can be applied correctly in
+such systems but fail to take full advantage of the parallelism enabled
+by allowing processing cores to access recovery data directly
+using memory operations rather than slow block transfers from secondary storage.
+
+
+\remove{%%%%%%%%%%%%
+	This proposal focuses specifically on recoverable data structures.
+	
+	The abstract problem of implementing locks that tolerate crash-recovery failures
+	was formalized recently by Golab and Ramaraju as Recoverable Mutual Exclusion (RME) \cite{gr:rme}.
+	In short, RME is a generalization of the standard mutual exclusion problem (ME) whereby a process that crashes while
+	accessing (i.e., acquiring, releasing, or holding) a lock is resurrected eventually and allowed to execute recovery actions.
+	This abstraction captures both individual process failures and system-wide failures, such as due to power outages.
+	%	which can be modeled as the simultaneous crash failure of every active process.
+	In contrast, the ME problem assumes that a process never fails while accessing a lock,
+	as otherwise a conventional lock becomes vulnerable to starvation.}%%%%%%% END RMEOVE
+
+The proposed research will investigate how the performance benefits of NVRAM can be harnessed
+for improving the robustness of shared-memory programs by allowing concurrent algorithms to efficiently recover from crash failures. This challenge requires a careful rethinking of recovery mechanisms and involves addressing both foundational and algorithmic research questions. Our emphasis would be on direct, non-transactional, approaches of implementing algorithms for \emph{recoverable concurrent} (also called \emph{persistent}) objects.
+Our work will target the following more specific goals:
+\begin{enumerate}
+	\item Formulate an abstract model of NVRAM shared-memory multiprocessors,
+	together with correctness and progress conditions,
+	to facilitate rigorous analysis of the theoretic limitations
+	of these systems, on the one hand, and construction of concurrent
+	algorithms that support effective recovery from crash failures, on the other hand.
+	
+	\item Investigate the construction of recoverable versions of primitive
+	memory operations such as read, write, swap, compare-and-swap and fetch-and-add,
+	deriving upper and lower bounds, and how these recoverable versions
+	can be used to implement various applications.
+	
+	\item Investigate the construction of recoverable versions of
+	specific widely-used concurrent objects such as mutual-exclusion locks,
+	stacks, queues and hash tables, deriving upper and lower bounds.
+	
+	\item Provide a framework that incorporates additional aspects of
+	shared-memory systems, like volatile caches, and methods for adapting results
+	developed in the abstract model to real-world systems.
+\end{enumerate}
+
+In the rest of this section, we provide required background.
+First, we briefly describe the standard shared-memory model.
+This is followed by a survey of correctness conditions that
+were proposed in recent years for defining the behavior
+of recoverable concurrent objects.
+We then survey previous work on transactional access to recoverable
+concurrent objects as well as more direct, non-transactional,
+implementations of such objects.
