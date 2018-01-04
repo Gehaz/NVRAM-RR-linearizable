@@ -4,6 +4,19 @@
 
 \subsection{Standard Shared-Memory Model}
 
+We use a standard model of an asynchronous shared memory system. A set $P$ of $n > 1$ \textit{processes} $p_0, \ldots, p_{n-1}$ communicate by applying operations on shared \textit{base objects} that support atomic operations, e.g., reads, writes and read-modify-write, to shared variables. No bound is assumed on the size of a shared variable (i.e., the number of distinct values it can take).
+Base objects are used in order to construct more complex implemented objects, such as queues and stacks, by defining access procedures that simulate each operation on the implemented object using operations on base objects.
+
+The interaction of processes with implemented objects is modelled using steps and histories. There are four types of steps:
+\begin{inparaenum}[(1)]
+	\item an invocation step, denoted $(INV, p, X, op)$, represents the invocation by process $p$ of operation $op$ on implemented object $X$;
+	\item a response step, denoted $(RES, p, X, ret)$, represents the completion by process $p$ of the last operation it invoked on object $X$, with response $ret$;
+	\item a crash step, denoted $(CRASH, p)$, represents the crash of a processes $Q$;
+	\item a recovery step, denoted $(REC, p)$, represents the recovery of the process $p$. This step is the only one allowed by $p$ after a $(CRASH, p)$ step.
+\end{inparaenum}
+
+
+
 \paragraph{Base Objects and Primitive Operations}
 Concurrent applications are programs that use \emph{base objects}.
 In the simplest case, these are the shared memory locations provided by the multi-core system.

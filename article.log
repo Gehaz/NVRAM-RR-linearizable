@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2017.2.23)  27 DEC 2017 15:27
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2017.2.23)  4 JAN 2018 14:02
 entering extended mode
 **article.tex
 (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.tex
@@ -405,29 +405,44 @@ Overfull \hbox (2.44429pt too wide) in paragraph at lines 101--1
  []
 
 
-Overfull \hbox (10.6005pt too wide) in paragraph at lines 11--31
+Overfull \hbox (8.5513pt too wide) in paragraph at lines 7--9
+\T1/aer/m/n/9 sup-port atomic op-er-a-tions, e.g., reads, writes and read-modif
+y-
+ []
+
+
+Overfull \hbox (10.50797pt too wide) in paragraph at lines 10--17
+\T1/aer/m/n/9 mented ob-ject $\OML/cmm/m/it/9 X$\T1/aer/m/n/9 ; (2) a re-sponse
+ step, de-noted $\OT1/cmr/m/n/9 (\OML/cmm/m/it/9 RES; p; X; ret\OT1/cmr/m/n/9 )
+$\T1/aer/m/n/9 ,
+ []
+
+
+Overfull \hbox (10.6005pt too wide) in paragraph at lines 24--44
 \T1/aer/m/n/9 Mod-ern ar-chi-tec-tures also pro-vide stronger atomic \T1/aer/m/
 it/9 read-modify-
  []
 
 
-Overfull \hbox (4.81259pt too wide) in paragraph at lines 57--61
+Overfull \hbox (4.81259pt too wide) in paragraph at lines 70--74
 \T1/aer/m/n/9 di-tions un-der which op-er-a-tions on a con-cur-rent data-struct
 ure
  []
 
-[2])
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\RecoverableBaseObjects
-.tex
+
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-)
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\discussion.tex
-Underfull \vbox (badness 5504) has occurred while \output is active []
+ [2])
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\RecoverableBaseObjects
+.tex [3])
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\discussion.tex)
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.bbl
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [3])
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.bbl) [4]
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.aux)
+ [4])
+[5
+
+] (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -435,7 +450,7 @@ LaTeX Warning: There were multiply-defined labels.
 Here is how much of TeX's memory you used:
  3708 strings out of 493921
  48691 string characters out of 3147276
- 115184 words of memory out of 3000000
+ 113184 words of memory out of 3000000
  6890 multiletter control sequences out of 15000+200000
  58478 words of font info for 75 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
@@ -445,16 +460,17 @@ s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx9.pfb><C:/Program Files/MiKTeX
 2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Program Files/MiKTeX 2.9/fon
 ts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/
 public/amsfonts/cm/cmmi9.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/am
-sfonts/cm/cmr9.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/
-cmsy6.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy9.pfb
-><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti9.pfb><C:/Prog
-ram Files/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Program Files/MiKT
-eX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/t
-ype1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/ut
-mr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on article.pdf (4 pages, 186046 bytes).
+sfonts/cm/cmr6.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/
+cmr9.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy6.pfb>
+<C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Progr
+am Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti9.pfb><C:/Program Files/
+MiKTeX 2.9/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Program Files/MiKTeX 2.9/fon
+ts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/t
+imes/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmr8a.pfb><
+C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
+Output written on article.pdf (5 pages, 199429 bytes).
 PDF statistics:
- 68 PDF objects out of 1000 (max. 8388607)
+ 75 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
