@@ -4,7 +4,7 @@
 
 \subsection{Standard Shared-Memory Model}
 
-We use a standard model of an asynchronous shared memory system. A set $P$ of $n > 1$ \textit{processes} $p_0, \ldots, p_{n-1}$ communicate by applying operations on shared \textit{base objects} that support atomic operations, e.g., reads, writes and read-modify-write, to shared variables. No bound is assumed on the size of a shared variable (i.e., the number of distinct values it can take).
+We use a standard model, based on Herlihy and Wing's model \cite{herlihyWingLinearizability}, of an asynchronous shared memory system. A set $P$ of $n > 1$ \textit{processes} $p_0, \ldots, p_{n-1}$ communicate by applying operations on shared \textit{base objects} that support atomic operations, e.g., reads, writes and read-modify-write, to shared variables. No bound is assumed on the size of a shared variable (i.e., the number of distinct values it can take).
 Base objects are used in order to construct more complex implemented objects, such as queues and stacks, by defining access procedures that simulate each operation on the implemented object using operations on base objects.
 
 The interaction of processes with implemented objects is modelled using steps and histories. There are four types of steps:
@@ -25,6 +25,17 @@ A history $H$ is \textit{sequential} if no two operations in it are concurrent. 
 
 An object $O$ is defined using a \textit{sequential specification} which defines its allowed behaviors and is expressed as a set of possible sequential histories over $O$. A sequential history $H$ is legal if for every implemented object $O$ accessed in $H$, $H|O$ belongs to the sequential specification of $O$.
 
+
+\paragraph{Correcntess Conditions}
+We now consider different variants of correctness conditions for NVRAM systems which takes into consideration failures. All the following variants are in some sense a natural extension for the Herlihy and Wing's linearizability property, since it is the widely used in conventional shared memory models. As such, we first give a formal definition for linearizability. However, since notation does not support crash steps, and therefore the definition is valid for history $H$ which is free of crash steps. Given such a history $H$, a \textit{completion} of $H$ is a history $H'$ constructed from $H$ by appending matching responses for a subset of pending operations, and then removing any remaining pending operations.
+
+\begin{definition}[Linearizability]
+	A history $H$ is linearizable if it has no crush events, and it has a completion $H_0$ and there exists a legal sequential history $S$ such that:
+	\begin{enumerate}
+		\item [L1.] $H_0$ is equivalent to $S$; and
+		\item [L2.] $<_H \subseteq <_S$ (i.e., if $op_1 <_H op_2$ and both ops appear in $S$ then $op_1 <_S op_2$).
+	\end{enumerate}
+\end{definition}
 
 
 \paragraph{Base Objects and Primitive Operations}
