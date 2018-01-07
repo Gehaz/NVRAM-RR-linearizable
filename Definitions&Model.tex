@@ -11,9 +11,19 @@ The interaction of processes with implemented objects is modelled using steps an
 \begin{inparaenum}[(1)]
 	\item an invocation step, denoted $(INV, p, X, op)$, represents the invocation by process $p$ of operation $op$ on implemented object $X$;
 	\item a response step, denoted $(RES, p, X, ret)$, represents the completion by process $p$ of the last operation it invoked on object $X$, with response $ret$;
-	\item a crash step, denoted $(CRASH, p)$, represents the crash of a processes $Q$;
-	\item a recovery step, denoted $(REC, p)$, represents the recovery of the process $p$. This step is the only one allowed by $p$ after a $(CRASH, p)$ step.
+	\item a crash step, denoted $(CRASH, p)$, represents the crash of a processes $p$;
+	\item a recovery step, denoted $(REC, p)$, represents the recovery of a process $p$. This step is the only one allowed by $p$ after a $(CRASH, p)$ step.
 \end{inparaenum}
+
+A \textit{history} $H$ is a sequence of steps. Given a history $H$, we use $H | p$ to denote the subhistory of $H$ containing all and only the events performed by process $p$. Similarly, $H | O$ denotes the subhistory of $H$ containing all and only the events performed on object $O$, plus crash events.
+A response step is \textit{matching} with respect to an invocation step $s$ by a process $p$ on object $X$ in a history $H$ if it is the first response step by $p$ on $X$ that follows $s$ in $H$, and it occurs before $p$'s next invocation (if any) in $H$.
+
+Given a history $H$ and a process $p$, an \textit{operation} by $p$ in $H$ comprises an invocation step and its matching response, if it exists. An operation is \textit{complete} if it has a matching response step, and \textit{pending} otherwise. Given two operations $op_1$ and $op_2$ in a history $H$, we say that $op_1$ \textit{happens before} $op_2$, denoted by $op_1 <_H op_2$, if $op_1$ has a matching
+response that precedes the invocation step of $op_2$ in $H$. If neither $op_1 <_H op_2$ nor $op_2 <_H op_1$ holds then we say that $op_1$ and $op_2$ are \textit{concurrent} in $H$.
+
+A history $H$ is \textit{sequential} if no two operations in it are concurrent. Two histories $H$ and $H'$ are \textit{equivalent} if for every process $p$, $H|p = H'|p$ holds. A history $H$ is \textit{well-formed} if for each process $p$, each invocation step in $H|p$ is immediately followed by a matching response, or by a crash step, an every response step in $H|p$ is a matching response for a preceded invocation. Informally, $H$ is well-formed if $H|p$ is a sequential history of operations, except for the ones that may not have a response step due to crash steps.
+
+An object $O$ is defined using a \textit{sequential specification} which defines its allowed behaviors and is expressed as a set of possible sequential histories over $O$. A sequential history $H$ is legal if for every implemented object $O$ accessed in $H$, $H|O$ belongs to the sequential specification of $O$.
 
 
 
