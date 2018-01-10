@@ -16,6 +16,13 @@ R.~Berryhill, W.~M. Golab, and M.~Tripunitara.
 \newblock In {\em 19th International Conference on Principles of Distributed
   Systems, {OPODIS}}, pages 20:1--20:17, 2015.
 
+\bibitem{DBLP:conf/podc/Censor-HillelPT15}
+K.~Censor{-}Hillel, E.~Petrank, and S.~Timnat.
+\newblock Help!
+\newblock In {\em Proceedings of the 2015 {ACM} Symposium on Principles of
+  Distributed Computing, {PODC} 2015, Donostia-San Sebasti{\'{a}}n, Spain, July
+  21 - 23, 2015}, pages 241--250, 2015.
+
 \bibitem{DBLP:conf/icdcs/GuerraouiL04}
 R.~Guerraoui and R.~R. Levy.
 \newblock Robust emulations of shared memory in a crash-recovery model.
