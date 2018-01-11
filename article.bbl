@@ -23,6 +23,18 @@ K.~Censor{-}Hillel, E.~Petrank, and S.~Timnat.
   Distributed Computing, {PODC} 2015, Donostia-San Sebasti{\'{a}}n, Spain, July
   21 - 23, 2015}, pages 241--250, 2015.
 
+\bibitem{DBLP:conf/podc/GolabH17}
+W.~M. Golab and D.~Hendler.
+\newblock Recoverable mutual exclusion in sub-logarithmic time.
+\newblock In {\em Proceedings of the {ACM} Symposium on Principles of
+  Distributed Computing, {PODC}}, pages 211--220, 2017.
+
+\bibitem{gr:rme}
+W.~M. Golab and A.~Ramaraju.
+\newblock Recoverable mutual exclusion: [extended abstract].
+\newblock In {\em Proceedings of the 2016 {ACM} Symposium on Principles of
+  Distributed Computing, {PODC}}, pages 65--74, 2016.
+
 \bibitem{DBLP:conf/icdcs/GuerraouiL04}
 R.~Guerraoui and R.~R. Levy.
 \newblock Robust emulations of shared memory in a crash-recovery model.
@@ -57,6 +69,12 @@ J.~Izraelevitz, H.~Mendes, and M.~L. Scott.
   full-system-crash failure model.
 \newblock In {\em Distributed Computing - 30th International Symposium,
   {DISC}}, pages 313--327, 2016.
+
+\bibitem{Jayanti-DISC-17}
+P.~Jayanti and A.~Joshi.
+\newblock Recoverable {FCFS} mutual exclusion with wait-free recovery.
+\newblock In {\em Distributed Computing - 31st International Symposium
+  ({DISC})}, 2017.
 
 \bibitem{LamportSC}
 L.~Lamport.

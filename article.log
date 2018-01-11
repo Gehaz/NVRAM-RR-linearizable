@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2017.2.23)  10 JAN 2018 18:22
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2017.2.23)  11 JAN 2018 16:08
 entering extended mode
 **article.tex
 (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.tex
@@ -221,26 +221,32 @@ Overfull \hbox (1.15967pt too wide) in paragraph at lines 4--7
 w preva-lent any-where from high-end server ma-chines, through
  []
 
-[1] [2])
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\Definitions&Model.tex
-[3]
-Missing character: There is no â in font cmr10!
-Missing character: There is no € in font cmr10!
-Missing character: There is no ™ in font cmr10!
-Missing character: There is no â in font cmr10!
-Missing character: There is no € in font cmr10!
-Missing character: There is no ™ in font cmr10!
- [4])
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\RecoverableBaseObjects
-.tex
+[1] [2] [3]
+Overfull \hbox (22.18965pt too wide) in paragraph at lines 67--68
+[]\OT1/cmr/m/n/10.95 We pro-pose a new cor-rect-ness prop-erty called \OT1/cmr/
+m/it/10.95 re-cov-er-able re-sponse lin-eariz-abil-ity \OT1/cmr/m/n/10.95 (RR-l
+inearizability).
+ []
 
-LaTeX Warning: Reference `subsec:progressCorrectness' on page 5 undefined on in
+)
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\Definitions&Model.tex
+[4]
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ™ in font cmr10!
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ™ in font cmr10!
+ [5])
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\RecoverableBaseObjects
+.tex [6]
+
+LaTeX Warning: Reference `subsec:progressCorrectness' on page 7 undefined on in
 put line 5.
 
-[5] [6])
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\discussion.tex)
-(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.bbl [7])
-[8] (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.aux)
+[7]) (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\discussion.tex)
+(C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.bbl [8]
+[9]) [10] (C:\Users\ohadben\Documents\GitHub\NVRAM-RR-linearizable\article.aux)
 
 LaTeX Warning: There were undefined references.
 
@@ -249,13 +255,13 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 2271 strings out of 493921
- 29188 string characters out of 3147276
+ 2276 strings out of 493921
+ 29262 string characters out of 3147276
  80356 words of memory out of 3000000
- 5543 multiletter control sequences out of 15000+200000
- 16321 words of font info for 63 fonts, out of 3000000 for 9000
+ 5547 multiletter control sequences out of 15000+200000
+ 16489 words of font info for 64 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 33i,8n,26p,919b,316s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 33i,8n,26p,1104b,316s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Pr
 ogram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Fi
 les/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Program Files/MiK
@@ -269,10 +275,11 @@ ogram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Fi
 les/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Program Files/MiKTe
 X 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Program Files/MiKTeX 2.9/fon
 ts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1
-/public/amsfonts/cm/cmtt12.pfb>
-Output written on article.pdf (9 pages, 228707 bytes).
+/public/amsfonts/cm/cmtt10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/
+amsfonts/cm/cmtt12.pfb>
+Output written on article.pdf (11 pages, 244738 bytes).
 PDF statistics:
- 92 PDF objects out of 1000 (max. 8388607)
+ 102 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
