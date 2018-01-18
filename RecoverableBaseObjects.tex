@@ -2,7 +2,26 @@
 \section{Recoverable Base Objects}
 \label{section: Recoverable Base Objects}
 
-The correctness properties variants discussed in section \ref{subsec:progressCorrectness} does not need to consider primitives, as any atomic operation satisfies any of the properties. Unlike it, RR-linearizability is not satisfied by primitives since the operation's response is lost in case of a failure. Therefore, there is a need to supply each primitive with an implementation as well as a recovery code. A system which supply recoverable primitives can be used to implement any object in a recoverable way - in case of a crash the process will simply recover the last atomic operation it executed before the crash. In case the operation is aborted, the process will reissue it. After that, it can continue and execute the remaining code safely. This observation focus our attention to implementation of primitives in a recoverable manner.
+We consider a model in which the program counter is stored in the non-volatile memory. This can be done either explicitly in the program, or implicitly by the operating system. In this model, upon recovery the last PC is available, and the system knows during what operation the process crash, and thus the proper \texttt{Recover} function is invoked. As a result, there is uncertainty regarding whether the last instruction was performed or not.
+
+The following example clarify why do we need the extension of recoverable object definition to holds even for the case of primitives.
+Consider an object supporting compare-and-swap (CAS) atomic operation. Assume a process $p$ is executing an operation $res \leftarrow C.CAS(old,new)$ and crashes. There are several options for at what exact time the crash took place, and each case raises a different problem.
+
+In the standard crash model, a primitive operation took effect instantly in the history, that is, the response followed the invocation in the history, where no other step by any other process was allowed in between. Under the same definition, and assuming the process crash just after completing the CAS operation, and before advancing the PC, there was a response step in the history, and thus the RR-linearizability does not require the process to recover the operation. However, the operation is still pending in some sense, as upon recovery the process does not know whether it took affect of no, since the PC still points the same line, and $res$ content was erased.
+
+Considering the response of the CAS operation to be at the time where the PC is advance solves the above problem. Nevertheless, what if the process crashes just after the PC was changed? Again, the operation is not pending, so there is no need to recover it. In this case, upon recovery the process knows the operation completed, since the PC no longer points to it. Nevertheless, the process have no access to the response value that was stored in $res$, residing in the cache, and hence it may not be able to proceed its execution.
+
+In order to face those problems we would like to have a definition under which, if a process crash after completing its operation, then upon recovery the process aware to fact the operation was completed, as well as have an access to the response value. For that, we define an object as \textit{recoverable} if in addition to a \texttt{Recover} function, the response step is determined to be at the point where the PC is updated to point outside of the operation implementation. Moreover, if the operation have a non-trivial response value (e.g., CAS or swap) the call for the operation gets another argument which is a pointer to a location in the non-volatile memory, such that the response value is written to this location before the operation completes.
+Under this definition, if a process fails after the operation was completed, upon recovery it knows the operation was completed using the PC, as well as have an access to the response value residing in the main memory.
+
+Notice that the requirement from the operation to store the response value in the non-volatile memory is not part of the object specification, but rather an "artificial" behaviour we require. The linearization points of the object only needs to 
+
+
+
+
+
+
+A system equipped with recoverable primitives can be used to implement any object in a recoverable way in the following manner: in case of a crash the process will simply recover the last atomic operation along which the process crashed. Once the operation completes, the process can continue and execute the remaining code safely. This observation focus our attention to implementation of primitives in a recoverable manner.
 
 In the following section we present RR-linearizable implementations for well known primitives, as well as presenting impossibility result for others. We focus our attention on bounded wait-free implementations, that is, the number of steps a process takes when executing the recovery code in the absence of a failure is finite and bounded by a known constant (may be a function of n, the number of processes in the system), regardless of the other processes steps and the failures the process experienced so far. In addition, we would like the recovery code to use a finite number of variables.
 The fact that RR-linearizabilty allows us to swift the linearization point of an operation to after the crash is used to recover after a primitive failure.

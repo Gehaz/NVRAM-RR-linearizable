@@ -9,10 +9,10 @@ Base objects are used in order to construct more complex implemented objects, su
 
 The interaction of processes with implemented objects is modelled using steps and histories. There are four types of steps:
 \begin{inparaenum}[(1)]
-	\item an invocation step, denoted $(INV, p, X, op)$, represents the invocation by process $p$ of operation $op$ on implemented object $X$;
+	\item an invocation step, denoted $(INV, p, X, op)$, represents the invocation by process $p$ of an operation $op$ on implemented object $X$;
 	\item a response step, denoted $(RES, p, X, ret)$, represents the completion by process $p$ of the last operation it invoked on object $X$, with response $ret$;
 	\item a crash step, denoted $(CRASH, p)$, represents the crash of a processes $p$;
-	\item a recovery step, denoted $(REC, p)$, represents the recovery of a process $p$. This step is the only one allowed by $p$ after a $(CRASH, p)$ step.
+%	\item a recovery step, denoted $(REC, p)$, represents the recovery of a process $p$. This step is the only one allowed by $p$ after a $(CRASH, p)$ step.
 \end{inparaenum}
 
 A \textit{history} $H$ is a sequence of steps. Given a history $H$, we use $H | p$ to denote the subhistory of $H$ containing all and only the events performed by process $p$. Similarly, $H | O$ denotes the subhistory of $H$ containing all and only the events performed on object $O$, plus crash and recovery events.
@@ -33,7 +33,7 @@ All the following variants are in some sense a natural extension for the Herlihy
 
 \begin{definition} [Linearizability]
 	\label{Definition: Linearizability}
-	A finite history $H$ is linearizable if it has no crush events, and it has a completion $H'$ and there exists a legal sequential history $S$ such that:
+	A finite history $H$ is linearizable if it has no crash events, and it has a completion $H'$ and there exists a legal sequential history $S$ such that:
 	\begin{enumerate}
 		\item [L1.] $H'$ is equivalent to $S$; and
 		\item [L2.] $<_H \subseteq <_S$ (i.e., if $op_1 <_H op_2$ and both ops appear in $S$ then $op_1 <_S op_2$).
@@ -70,70 +70,20 @@ For recoverable linearizability, a \textit{recoverable completion} $H'$ is obtai
 	\end{enumerate}
 \end{definition}
 
-As shown by Berryhill et al. \cite{DBLP:conf/opodis/BerryhillGT15}, the requirement for a strict completion $H'$ does not prevent an operation from taking effect after a crush that interrupts it. This follows from the fact that unlike strict linearizability, we do not ask the sequential history $S$ to respect the order $<_{H'}$, but rather the order $<_H$. For an operation $op$ that was interrupt by a crush, in $<_H$ it is after any operation that was complete before the invocation of $op$, but there is no operation following $op$ in $<_H$, since it has no response. Therefore, in $S$ we allow to place $op$ anywhere after its invocation without violating $<_H$. However, in order to prevent program order inversion of the same process on the same object, $\ll_H$ restrict $S$ not place $op$ in such a reverse order.
+As shown by Berryhill et al. \cite{DBLP:conf/opodis/BerryhillGT15}, the requirement for a strict completion $H'$ does not prevent an operation from taking effect after a crash that interrupts it. This follows from the fact that unlike strict linearizability, we do not ask the sequential history $S$ to respect the order $<_{H'}$, but rather the order $<_H$. For an operation $op$ that was interrupt by a crash, in $<_H$ it is after any operation that was complete before the invocation of $op$, but there is no operation following $op$ in $<_H$, since it has no response. Therefore, in $S$ we allow to place $op$ anywhere after its invocation without violating $<_H$. However, in order to prevent program order inversion of the same process on the same object, $\ll_H$ restrict $S$ not place $op$ in such a reverse order.
 
 
 
+\subsubsection{Recoverable Response Linearizability}
+As discussed in the introduction, none of the above definitions guarantee a failing process can complete its pending operation upon recovery, or at least have an access to the response value of the operation in case it is linearized. In some cases, a process might be able to know whether the operation took effect. Friedman et al. \cite{DBLP:conf/wdag/FriedmanHMP17} used the term \textit{detectable execution} for an implementation which satisfy this condition. Quoting from \cite{DBLP:conf/wdag/FriedmanHMP17}: "Durable linearizability does not provide a mechanism to determine whether an operation that executed concurrently with a crash was eventually executed. Without the ability to distinguish completed operations from lost operations, it would be difficult to recover the entire program, because in practice it is often important to execute each operation exactly once."
 
-\paragraph{Base Objects and Primitive Operations}
-Concurrent applications are programs that use \emph{base objects}.
-In the simplest case, these are the shared memory locations provided by the multi-core system.
+We introduce a new condition called recoverable response linearizability (RR-linearizability), addressing this problem. RR-linearizability requires a process recovering to complete its pending operation. Following Golab and Ramaraju model \cite{gr:rme}, a concurrent object is called \textit{recoverable} if it implements a \texttt{Recover} function, such that if a process crashes while $p$ executes an operation on the recoverable object, upon recovering the \texttt{Recover} function is triggered (by the system), and we require the process to complete its pending operation before invoking the next one. As we explain later, the completion requirement, although seems too restrictive, does not rule out an option for the \texttt{Recover} function to abort the pending operation, as in this case the process can reissue it. Nevertheless, the restriction simplifies the definition and proofs.
 
-The system's hardware or operating system provide \emph{primitive operations} that can be applied to memory locations. The simplest primitives, which are always assumed,
-are the familiar \emph{read} and \emph{write} operations,
-also called \emph{load} and \emph{store}.
-%It has been shown \cite{herlihy91waitfree} that reads and writes alone
-%cannot support fault-tolerant implementations of even
-%the most basic data structures, like queues and stacks. This and other evidence on the relative weakness of
-Modern architectures also provide stronger atomic \emph{read-modify-write} primitives. The most notable of these is \emph{compare-and-swap} (abbreviated \textit{CAS}), which takes three arguments: a memory address, an old value, and a new value. If the address stores the old value, it is replaced with the new value; otherwise it is unchanged. The success or failure of this operation is then reported back to the program.
-%It is crucial that this operation is executed atomically; thus an algorithm can read a datum from memory, modify it, and write it back
-%only if no other thread modified it in the meantime.
-%
-%To exemplify the use of the \textit{CAS} operation, consider the following implementation of a concurrent \emph{counter} object. A counter supports a single operation \texttt{INC}, which atomically increments the counter value by $1$ and returns its previous value. Using \textit{CAS}, the \texttt{INC} operation can be implemented by reading the current
-%counter value (old value), adding 1, and then using \textit{CAS} for attempting to update the counter. If no other
-%thread modifies the counter between the read and \textit{CAS} operations, the \textit{CAS} will succeed, and the counter will be updated. However, if a concurrent modification does occur, the \textit{CAS} will fail, and the thread
-%will repeatedly retry the update (by first reading the new value of the counter) until it is successful. This algorithm is nonblocking but not wait-free, since other threads may keep
-%incrementing the counter and make our thread repeatedly fail.
-%
-%\textit{CAS} can be used, together with reads and writes,
-%to implement any object in a wait-free manner~\cite{herlihy91waitfree}.
-%It has consequently became a synchronization primitive of choice, and hardware support for
-%it is provided in many multiprocessor architectures, e.g.,~\cite{Itanium2001,Motorola86,Sparc}.
+The Recover function does not allow a process $p$ to invoke a new operation while there is a pending operation, hence in every history $H$ a process have at most a single pending operation which is his last invoked operation. As such, we require $H$ to be linearizable. Since we require every operation of a process to complete (except for maybe the last one), and we use the original definition of linearizability, this implies that locality holds under this definition.
 
-Another example of a widely-implemented strong primitive is \emph{fetch-and-add}, which takes a memory address and an integer as its two arguments. When applied, it atomically adds the integer argument to the value stored at the memory address and returns the previous value.
-%A concurrent counter can be trivially implemented by using a single shared variable that supports the \emph{fetch-and-inc} operation.
+RR-linearizability by its own does not consider the response value of the operation. For example, primitive CAS satisfies RR-linearizability, although a process crash after executing CAS have no access to the response value upon recovery, as it was lost. For that, a recoverable object also needs to satisfy the following: every operation return (i.e., there is a response step) only after the response value is persistent. Notice that the object's semantic does not change, that is, we do not require the response value to be persistent at the linearization point.
 
-%Although atomic read-modify-write primitives, such as CAS and \emph{fetch-and-inc}, are extremely useful for %inter-thread synchronization, they are typically substantially slower than regular reads and writes.
-%On many shared-memory multiprocessors,
-%they cause the execution of a memory fence
-%(see, e.g., \cite[Section 8.1.2.2]{intelsys}).
+The combination of RR-linearizability together with recoverable objects yields a "fail-resistant" objects. If a process crash after completing an operation, then upon recovery the process have an access to the response value residing in the non-volatile memory. On the other hand, if a process fails before the response value become persistent, i.e., before the operation was ended, then upon recovery the Recovery function will complete the operation, together with making the response value persistent. To our knowledge, this is the first definition to consider the affect of a crash on the crashing process, and not only on the object.
 
+Notice that we did not specify how to persist the response value, and one can think of many ways to achieve this. In the work we focus on a specific implementation, where each operation of the object gets a location in the shared memory as an extra operand, and the last instruction before the return must be a write of the response value to this location. However, we do not restrict the definition to apply for different solutions.
 
-\paragraph{Progress Guarantees}
-Progress (also called \emph{liveness}) guarantees specify the conditions under which operations on a concurrent data-structure terminate. With \emph{blocking} (lock-based) implementations, the failure of a single thread may halt the progress of all other threads, if the thread fails while holding a lock. Consequently, the progress of blocking implementations can be guaranteed only when every participating thread is \emph{live}. (A thread is live if, whenever it begins executing an algorithm, it continues to take steps until the algorithm terminates.)
-%However, even blocking algorithms are expected to be \emph{weakly progressive}~\cite{DBLP:conf/popl/GuerraouiK09},
-%guaranteeing that an operation that does not encounter conflicts terminates successfully.
-%[[Took out definition of \emph{weakly progressive}.]]
-
-When locks are not used, threads should be able to make progress despite failures of other threads.
-There are several formal definitions capturing this intuitive requirement.
-The strongest liveness guarantee, \emph{wait-freedom}~\cite{herlihy91waitfree},
-assures that every operation performed by a thread completes within
-a finite number of its own steps, regardless of the failures of other threads.
-%\emph{Lock-free} algorithms \cite{herlihy91waitfree} may be unfair to individual threads, and only guarantee that \emph{some} operation completes within a finite number of steps, regardless of thread failures. Clearly, all
-%wait-free algorithms are lock-free, but, in general, a lock-free algorithm is not wait-free.
-%
-%\remove{
-%\emph{Nonblocking} algorithms \cite{herlihy91waitfree} (also called \emph{lock-free})
-%may be unfair to individual threads, and only guarantee that \emph{some} operation completes within a finite number of steps, regardless of thread failures. Clearly, all
-%wait-free algorithms are nonblocking, but, in general, a nonblocking algorithm is not wait-free.
-%[[[We can skip this paragraph.]]]}
-%%
-The weaker \emph{obstruction-freedom} guarantee~\cite{AttiyaGHK09,HerlihyLMS03, DBLP:conf/icdcs/HerlihyLM03}
-ensures only that if a thread executes in isolation (from some point on),
-without interleaved steps of other threads,
-then it will complete its operation within a finite number of steps.
-%Obstruction-free algorithms are also weakly progressive.
-%[[Took out reference to weakly progressive.]]
-%Wait-free, lock-free and obstruction-free algorithms fall under the category of \emph{nonblocking} algorithms \cite{herlihy91waitfree}, algorithms that ensure progress while avoiding the use of locks.
-%All wait-free algorithms are also obstruction-free, but the converse does not hold, in general.

@@ -23,6 +23,13 @@ K.~Censor{-}Hillel, E.~Petrank, and S.~Timnat.
   Distributed Computing, {PODC} 2015, Donostia-San Sebasti{\'{a}}n, Spain, July
   21 - 23, 2015}, pages 241--250, 2015.
 
+\bibitem{DBLP:conf/wdag/FriedmanHMP17}
+M.~Friedman, M.~Herlihy, V.~J. Marathe, and E.~Petrank.
+\newblock Brief announcement: {A} persistent lock-free queue for non-volatile
+  memory.
+\newblock In {\em 31st International Symposium on Distributed Computing, {DISC}
+  2017, October 16-20, 2017, Vienna, Austria}, pages 50:1--50:4, 2017.
+
 \bibitem{DBLP:conf/podc/GolabH17}
 W.~M. Golab and D.~Hendler.
 \newblock Recoverable mutual exclusion in sub-logarithmic time.
