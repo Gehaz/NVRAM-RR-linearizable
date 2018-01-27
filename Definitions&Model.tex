@@ -77,7 +77,9 @@ As shown by Berryhill et al. \cite{DBLP:conf/opodis/BerryhillGT15}, the requirem
 \subsubsection{Recoverable Response Linearizability}
 As discussed in the introduction, none of the above definitions guarantee a failing process can complete its pending operation upon recovery, or at least have an access to the response value of the operation in case it is linearized. In some cases, a process might be able to know whether the operation took effect. Friedman et al. \cite{DBLP:conf/wdag/FriedmanHMP17} used the term \textit{detectable execution} for an implementation which satisfy this condition. Quoting from \cite{DBLP:conf/wdag/FriedmanHMP17}: "Durable linearizability does not provide a mechanism to determine whether an operation that executed concurrently with a crash was eventually executed. Without the ability to distinguish completed operations from lost operations, it would be difficult to recover the entire program, because in practice it is often important to execute each operation exactly once."
 
-A concurrent object is called \textit{recoverable} if it implements a \texttt{Recover} function, such that if a process crash while executing an operation on the recoverable object, upon recovering the \texttt{Recover} function is triggered (by the system), and we require the process to complete its pending operation before invoking the next one. As we explain later, the completion requirement, although seems too restrictive, does not rule out an option for the \texttt{Recover} function to abort the pending operation, as in such case the process can reissue it. Nevertheless, this restriction simplifies the definition and proofs.
+A concurrent object is called \textit{recoverable} if any of its operations is equipped with a \texttt{Recover} function, such that if a process crash while executing an operation on the recoverable object, upon recovering the appropriate \texttt{Recover} function is triggered (by the system), and we require the process to complete its pending operation before invoking the next one. As we explain later, the completion requirement, although seems too restrictive, does not rule out an option for the \texttt{Recover} function to abort the pending operation, as in such case the process can reissue it. Nevertheless, this restriction simplifies the definition and proofs.
+
+In order to formally capture this behavior we introduce a recover step, denoted $(RECOVER,p)$, represents the recovery of a process $p$, and the invocation of the \texttt{Recovery} function matching the pending operation, if there is one. A crash step is always followed by a recover step, and vice verse.
 
 Recoverable object by its own does not consider the response value of the operation. For example, a primitive CAS is a recoverable object (with an empty \texttt{Recover} function), although a process crashing after executing CAS have no access to the response value upon recovery, as it was lost. For this reason we extend the definition of recoverable object, such that in addition to a \texttt{Recover} function it also needs to satisfy the following: every operation returns (i.e., there is a response step in the history) only after the response value is persistent. In a more formal way, a process $p$ have a designated variable $Res_p$ in the non-volatile memory such that at the time of $(RES,p,X,ret)$ step, the value $ret$ is written in $Res_p$.
 Notice that the object's semantic does not change, that is, we do not require the response value to be persistent at the linearization point.
@@ -90,6 +92,12 @@ Notice that any object can be implemented in a recoverable manner, as long as th
 
 \begin{definition} [Recoverable response linearizability]
 	\label{Definition: RR-linearizability}
-	A finite history $H$ is recoverable response linearizable if it contains operations to recoverable objects only and $H$ is linearizable.
+	A finite history $H$ is recoverable response linearizable if:
+	\begin{enumerate}
+		\item $H$ contains operations to recoverable objects only;
+		\item In $H$, every $(CRASH,p)$ step is either the last step of $p$, or that the next step by $p$ is $(RECOVER,p)$, and vice verse (every $(RECOVER,p)$ step is preceded by $(CRASH,p)$ step);
+		\item If an invocation step has a matching response step, then it follows either the invocation step or a recover step;
+		\item Let $H'$ be the history obtained from $H$ by removing all crash and recover steps. Then $H'$ is well-formed and linearizable.
+	\end{enumerate}
 \end{definition}
 
