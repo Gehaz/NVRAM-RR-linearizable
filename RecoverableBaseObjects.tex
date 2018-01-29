@@ -2,7 +2,7 @@
 \section{Recoverable Base Objects}
 \label{section: Recoverable Base Objects}
 
-We consider a model in which the program counter (PC) is stored in the non-volatile memory. This can be done either explicitly in the program, or implicitly by the operating system. In this model, upon recovery the last PC is available, and the system knows during what operation the process crash, and thus the proper \texttt{Recover} function is invoked (the inner most one). As a result, there is uncertainty regarding whether the last instruction was performed or not.
+We consider a model in which the program counter (PC) is stored in the non-volatile memory. This can be done either explicitly in the program, or implicitly by the operating system. In this model, upon recovery the last PC is available, and the system knows during what operation the process crash, and thus the proper \texttt{Recover} function is invoked. As a result, there is uncertainty regarding whether the last instruction was performed or not. We also assume the \texttt{Recover} function has an access to the last PC before the crash, or in other words, it is aware of at what line the crash took place.
 
 The following example clarify why do we need the definition of recoverable object to holds even for the case of primitives.
 Consider an object supporting a compare-and-swap (CAS) atomic operation. Assume a process $p$ is executing an operation $res \leftarrow C.CAS(old,new)$ followed by a crash. There are several options for at what exact time the crash took place, and each case raises a different problem.
@@ -31,7 +31,7 @@ Following the formal definition of RR-linearizability, a process will need to wr
 In general, operations that only reads the status of an object and does not change it (more formally, operation that can be commute with any other operation by a different process), usually uses only read primitive (e.g., snapshot), or at least implemented in a way such that if a process crash in the middle of an operation then reissue it does not affect the rest of the processes. In such cases, one can implement a recoverable version of the operation by having the \texttt{Recover} function reissuing the operation.
 
 \paragraph*{Write}
-For write, we "wrap" the atomic write with a mechanism which allows the process to conclude whether its write or a different write took place since the invocation. For that, process $p$ have a designated variable $R_p$ in the non-volatile memory. The same variable can be used in all write operations of process $p$.
+For write, we "wrap" the atomic write with a mechanism which allows the process to conclude whether its write or a different write took place since the invocation. For that, process $p$ have a designated variable $R_p$ in the non-volatile memory. The same variable can be used for all write operations of process $p$.
 
 \begin{algorithm}
 	\caption{Write}\label{recoverable write}
@@ -59,7 +59,7 @@ The intuition for correctness is the following. If there was a write to $R$ betw
 
 \paragraph*{Compare-and-Swap}
 
-A Compare-and-Swap (CAS) object supports the $cas(old,new)$ operation, which atomically compares the value stored in the object to old, and if they are equal, sets the value to be new. CAS object also support a read operation which returns the value stored in the object.
+A Compare-and-Swap (CAS) object supports the $cas(old,new)$ operation, which atomically compares the value stored in the object to old, and if they are equal, sets the value to be new. The operation returns the compression's result, that is, if the operation succeeded or failed. CAS object also support a read operation which returns the value stored in the object.
 
 The main idea is to have the CAS stored also the if of a process who last committed a successful CAS. Thus, a process can inform a different process if its CAS operation was successful.
 A process $p$ first reads the CAS object. If it observes a value different then $old$ it returns false. In such case, the operation is linearized at the linearization point of the read. Otherwise, $p$ informs the last process who committed a successful CAS that his operation was completed by writing to a designated location in the non-volatile memory. This way, if $p$ crash after a successful CAS operation, the next process which change the value of the CAS, first needs to inform $p$ his CAS was successful. Therefore, upon recovery $p$ can identify if its CAS took affect by seeing his value in $C$, or that some other process informed him about a success.
