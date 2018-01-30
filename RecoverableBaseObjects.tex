@@ -69,8 +69,8 @@ A process $p$ first reads the CAS object. If it observes a value different then 
 	
 	\hspace*{\algorithmicindent} \textbf{Shared variables:}
 	\begin{itemize}
-		\item C: compare-and-swap object, init <null,null>
-		\item R[N][N]: two dimensions array, init null
+		\item C: compare-and-swap object, init $<null,null>$
+		\item R[N][N]: two dimensions array, init $null$
 	\end{itemize}
  
 	\begin{algorithmic}[1]
@@ -83,15 +83,17 @@ A process $p$ first reads the CAS object. If it observes a value different then 
   		\State $R[id][p] \gets val$
 		\EndIf
 		\State $ret \gets C.cas(<id,val>, <p,new>)$
-		\State \Return ret
+		\State $Res_p \gets ret$
+		\State \Return $ret$
 		\EndProcedure
 		
 		\Procedure{recover}{}
 		\State Read C, R[p][$*$]
 		\If {$<p,new>$ appears in C, or $new$ appears in R[p][$*$]}
-		\State \Return true
+		\State $Res_p \gets true$
+		\State \Return $true$
 		\Else {}
-		\State \Return abort
+		\State \Return $abort$
 		\EndIf
 		\EndProcedure
 	\end{algorithmic}
@@ -99,4 +101,7 @@ A process $p$ first reads the CAS object. If it observes a value different then 
 \end{algorithm}
 
 
-A process failing before line 7 can safely abort the operation upon recovering. A process failing at line 7 and before completing the operation will execute the \texttt{Recover} function.
+Following the code, a process crash before line 7 will abort its operation upon recovering, while a crash at line 7 (and before completing the operation) will depends on whether the CAS was successful. A key point in this implementation is that a fail CAS operation can be aborted anyway, since it does not effect other processes and thus aborting it does not violate the sequential specification of the object. 
+
+
+
