@@ -101,7 +101,7 @@ A process $p$ first reads the CAS object. If it observes a value different then 
 \end{algorithm}
 
 
-Following the code, a process crash before line 7 will abort its operation upon recovering, while a crash at line 7 (and before completing the operation) will depends on whether the CAS was successful. A key point in this implementation is that a fail CAS operation can be aborted anyway, since it does not effect other processes and thus aborting it does not violate the sequential specification of the object. 
+Following the code, a process crash before line 7 will abort its operation upon recovering, while a crash at line 7 (and before completing the operation) will depend on whether the CAS was successful. A key point in this implementation is that a fail CAS operation can be aborted anyway, since it does not effect other processes and thus aborting it does not violate the sequential specification of the object. 
 
 
 
