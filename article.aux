@@ -1,57 +1,80 @@
 \relax 
-\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}}
 \citation{LamportSC}
 \citation{herlihyWingLinearizability}
 \citation{Aguilera2003StrictLA}
 \citation{herlihy91waitfree}
 \citation{DBLP:conf/icdcs/GuerraouiL04}
 \citation{DBLP:conf/podc/Censor-HillelPT15}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Related work}{2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Related work}{2}{subsection.1.1}}
 \citation{DBLP:conf/opodis/BerryhillGT15}
 \citation{DBLP:conf/wdag/IzraelevitzMS16}
 \citation{gr:rme}
 \citation{DBLP:conf/podc/GolabH17}
 \citation{Jayanti-DISC-17}
 \citation{herlihyWingLinearizability}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Model and Definitions}{4}}
-\newlabel{section: Model}{{2}{4}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Standard Shared-Memory Model}{4}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Model and Definitions}{4}{section.2}}
+\newlabel{section: Model}{{2}{4}{Model and Definitions}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Standard Shared-Memory Model}{4}{subsection.2.1}}
 \citation{DBLP:conf/opodis/BerryhillGT15}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.1}Correcntess Conditions}{5}}
-\newlabel{Definition: Linearizability}{{1}{5}}
-\newlabel{Definition: Strict linearizability}{{2}{5}}
-\newlabel{Definition: Persistent linearizability}{{3}{5}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.1}Correcntess Conditions}{5}{subsubsection.2.1.1}}
+\newlabel{Definition: Linearizability}{{1}{5}{Linearizability}{definition.1}{}}
+\newlabel{Definition: Strict linearizability}{{2}{5}{Strict linearizability}{definition.2}{}}
+\newlabel{Definition: Persistent linearizability}{{3}{5}{Persistent linearizability}{definition.3}{}}
 \citation{DBLP:conf/opodis/BerryhillGT15}
 \citation{DBLP:conf/wdag/FriedmanHMP17}
 \citation{DBLP:conf/wdag/FriedmanHMP17}
-\newlabel{Definition: Recoverable linearizability}{{4}{6}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.2}Recoverable Response Linearizability}{6}}
-\newlabel{Definition: RR-linearizability}{{5}{7}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Recoverable Base Objects}{7}}
-\newlabel{section: Recoverable Base Objects}{{3}{7}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Write}}{9}}
-\newlabel{recoverable write}{{1}{9}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces R.write(val) by process $p$}}{9}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces Compare-and-Swap}}{11}}
-\newlabel{recoverable CAS}{{3}{11}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces C.cas(old,new) by process $p$}}{11}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {5}{\ignorespaces Test-and-Set}}{13}}
-\newlabel{recoverable TAS}{{5}{13}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {6}{\ignorespaces T.t\&s() by process $p$}}{13}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{13}}
-\newlabel{section: Discussion}{{4}{13}}
+\newlabel{Definition: Recoverable linearizability}{{4}{6}{Recoverable linearizability}{definition.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.2}Recoverable Response Linearizability}{6}{subsubsection.2.1.2}}
+\newlabel{Definition: RR-linearizability}{{5}{7}{Recoverable response linearizability}{definition.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Recoverable Base Objects}{7}{section.3}}
+\newlabel{section: Recoverable Base Objects}{{3}{7}{Recoverable Base Objects}{section.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {Write}{\ignorespaces program for process $p$}}{9}{algorithm.Write}}
+\newlabel{alg:recoverable-write}{{Write}{9}{Write}{algorithm.Write}{}}
+\newlabel{write-first}{{3}{9}{Write}{algorithm.Write}{}}
+\newlabel{write-second}{{5}{9}{Write}{algorithm.Write}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {Compare-and-Swap}{\ignorespaces program for process $p$}}{11}{algorithm.Compare-and-Swap}}
+\newlabel{alg:recoverable-CAS}{{Compare-and-Swap}{11}{Compare-and-Swap}{algorithm.Compare-and-Swap}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {Test-and-Set}{\ignorespaces program for process $p$}}{14}{algorithm.Test-and-Set}}
+\newlabel{alg:recoverable-TAS}{{Test-and-Set}{14}{Test-and-Set}{algorithm.Test-and-Set}{}}
+\newlabel{return code}{{31}{14}{Test-and-Set}{algorithm.Test-and-Set}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {Counter}{\ignorespaces program for process $p$}}{14}{algorithm.Counter}}
+\newlabel{alg:recoverable-counter}{{Counter}{14}{Read}{algorithm.Counter}{}}
+\citation{DBLP:journals/siamcomp/JayantiTT00}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{15}{section.4}}
+\newlabel{section: Discussion}{{4}{15}{Discussion}{section.4}{}}
 \bibstyle{abbrv}
 \bibdata{references}
 \bibcite{Aguilera2003StrictLA}{1}
 \bibcite{DBLP:conf/opodis/BerryhillGT15}{2}
 \bibcite{DBLP:conf/podc/Censor-HillelPT15}{3}
-\bibcite{DBLP:conf/wdag/FriedmanHMP17}{4}
-\bibcite{DBLP:conf/podc/GolabH17}{5}
-\bibcite{gr:rme}{6}
-\bibcite{DBLP:conf/icdcs/GuerraouiL04}{7}
-\bibcite{herlihy91waitfree}{8}
-\bibcite{herlihyWingLinearizability}{9}
-\bibcite{DBLP:conf/wdag/IzraelevitzMS16}{10}
-\bibcite{Jayanti-DISC-17}{11}
-\bibcite{LamportSC}{12}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Formal Proofs}{14}}
+\bibcite{DBLP:journals/jacm/FischerLP85}{4}
+\bibcite{DBLP:conf/wdag/FriedmanHMP17}{5}
+\bibcite{DBLP:conf/podc/GolabH17}{6}
+\bibcite{gr:rme}{7}
+\bibcite{DBLP:conf/icdcs/GuerraouiL04}{8}
+\bibcite{herlihy91waitfree}{9}
+\bibcite{herlihyWingLinearizability}{10}
+\bibcite{DBLP:conf/wdag/IzraelevitzMS16}{11}
+\bibcite{Jayanti-DISC-17}{12}
+\bibcite{DBLP:journals/siamcomp/JayantiTT00}{13}
+\bibcite{LamportSC}{14}
+\citation{DBLP:journals/jacm/FischerLP85}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Formal Proofs}{17}{appendix.A}}

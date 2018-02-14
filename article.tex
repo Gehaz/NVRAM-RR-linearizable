@@ -12,7 +12,9 @@
 \usepackage{fullpage}
 \usepackage{appendix}
 \usepackage{authblk}
-
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{multicol}
 
 % theorem styles
 
@@ -38,7 +40,6 @@
 
 \newcommand{\remove}[1]{}
 
-
 \newcommand{\singlespace}{\renewcommand{\baselinestretch}{1.0}\normalsize}
 \newcommand{\denseSpace}{\renewcommand{\baselinestretch}{0.80}\normalsize}
 \newcommand{\normalSpace}{\renewcommand{\baselinestretch}{1.0}\normalsize}
@@ -56,6 +57,10 @@
 %\let\crnotice\mycrnotice%
 %\let\confname\myconfname%
 
+\newenvironment{varalgorithm}[1]
+{\algorithm\renewcommand{\thealgorithm}{#1}}
+{\endalgorithm}
+
 
 \begin{document}
 	
@@ -71,6 +76,7 @@
 	\bibliographystyle{abbrv}
 	\bibliography{references}
 	
+	\newpage
 	\appendix
 	\input{appendix}
 

@@ -1,0 +1,9 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Related work}{section.1}% 2
+\BOOKMARK [1][-]{section.2}{Model and Definitions}{}% 3
+\BOOKMARK [2][-]{subsection.2.1}{Standard Shared-Memory Model}{section.2}% 4
+\BOOKMARK [3][-]{subsubsection.2.1.1}{Correcntess Conditions}{subsection.2.1}% 5
+\BOOKMARK [3][-]{subsubsection.2.1.2}{Recoverable Response Linearizability}{subsection.2.1}% 6
+\BOOKMARK [1][-]{section.3}{Recoverable Base Objects}{}% 7
+\BOOKMARK [1][-]{section.4}{Discussion}{}% 8
+\BOOKMARK [1][-]{appendix.A}{Formal Proofs}{}% 9
