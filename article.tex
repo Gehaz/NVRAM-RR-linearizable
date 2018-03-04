@@ -15,6 +15,7 @@
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{multicol}
+\usepackage{color}
 
 % theorem styles
 
@@ -37,6 +38,11 @@
 \newtheorem{ru}{Rule}
 \newtheorem{solution}{Solution}
 \newtheorem{theorem}{Theorem}
+
+\def\notfirstuse{\textit{repeated}}
+\newenvironment{lemma-repeat}[1]{\begin{trivlist}
+\item[\hspace{\labelsep}{\bf\noindent Lemma~\ref{#1} (repeated) }]\it}%
+{\end{trivlist}}
 
 \newcommand{\remove}[1]{}
 
@@ -69,15 +75,16 @@
 	\input{introduction}
 	\input{Definitions&Model}
 	\input{RecoverableBaseObjects}
-	\input{discussion}
+    \input{related}
+%	\input{discussion}
 
 	\newpage
 
 	\bibliographystyle{abbrv}
 	\bibliography{references}
 	
-	\newpage
 	\appendix
 	\input{appendix}
 
 \end{document}
+

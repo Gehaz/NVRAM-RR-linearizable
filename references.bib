@@ -381,7 +381,7 @@
 }
 
 
-@inproceedings{DBLP:conf/podc/GolabR16,
+@inproceedings{GolabR16,
 	author    = {Wojciech M. Golab and
 	Aditya Ramaraju},
 	title     = {Recoverable Mutual Exclusion: [Extended Abstract]},
@@ -392,11 +392,9 @@
 }
 
 @inproceedings{DBLP:conf/podc/GolabH17,
-	author    = {Wojciech M. Golab and
-	Danny Hendler},
+	author    = {Wojciech M. Golab and 	Danny Hendler},
 	title     = {Recoverable Mutual Exclusion in Sub-logarithmic Time},
-	booktitle = {Proceedings of the {ACM} Symposium on Principles of Distributed Computing,
-	{PODC}},
+	booktitle = {Proceedings of the {ACM} Symposium on Principles of Distributed Computing {PODC}},
 	pages     = {211--220},
 	year      = {2017},
 }
@@ -629,38 +627,202 @@
 	bibsource = {dblp computer science bibliography, http://dblp.org}
 }
 
-
-@article{DBLP:journals/siamcomp/JayantiTT00,
-	author    = {Prasad Jayanti and
-	King Tan and
-	Sam Toueg},
-	title     = {Time and Space Lower Bounds for Nonblocking Implementations},
-	journal   = {{SIAM} J. Comput.},
-	volume    = {30},
-	number    = {2},
-	pages     = {438--456},
-	year      = {2000},
-	url       = {https://doi.org/10.1137/S0097539797317299},
-	doi       = {10.1137/S0097539797317299},
-	timestamp = {Sat, 27 May 2017 14:22:59 +0200},
-	biburl    = {http://dblp.org/rec/bib/journals/siamcomp/JayantiTT00},
-	bibsource = {dblp computer science bibliography, http://dblp.org}
+@inproceedings{DBLP:conf/podc/GolabR16,
+  author    = {Wojciech M. Golab and
+               Aditya Ramaraju},
+  title     = {Recoverable Mutual Exclusion: [Extended Abstract]},
+  booktitle = {Proceedings of the 2016 {ACM} Symposium on Principles of Distributed
+               Computing, {PODC} 2016, Chicago, IL, USA, July 25-28, 2016},
+  pages     = {65--74},
+  year      = {2016}
 }
 
+@inproceedings{DBLP:conf/wdag/JayantiJ17,
+  author    = {Prasad Jayanti and
+               Anup Joshi},
+  title     = {Recoverable {FCFS} Mutual Exclusion with Wait-Free Recovery},
+  booktitle = {31st International Symposium on Distributed Computing, {DISC} 2017,
+               October 16-20, 2017, Vienna, Austria},
+  pages     = {30:1--30:15},
+  year      = {2017}
+}
 
 @article{DBLP:journals/jacm/FischerLP85,
-	author    = {Michael J. Fischer and
-	Nancy A. Lynch and
-	Mike Paterson},
-	title     = {Impossibility of Distributed Consensus with One Faulty Process},
-	journal   = {J. {ACM}},
-	volume    = {32},
-	number    = {2},
-	pages     = {374--382},
-	year      = {1985},
-	url       = {http://doi.acm.org/10.1145/3149.214121},
-	doi       = {10.1145/3149.214121},
-	timestamp = {Thu, 26 Jan 2012 17:31:31 +0100},
-	biburl    = {http://dblp.org/rec/bib/journals/jacm/FischerLP85},
-	bibsource = {dblp computer science bibliography, http://dblp.org}
+  author    = {Michael J. Fischer and
+               Nancy A. Lynch and
+               Mike Paterson},
+  title     = {Impossibility of Distributed Consensus with One Faulty Process},
+  journal   = {J. {ACM}},
+  volume    = {32},
+  number    = {2},
+  pages     = {374--382},
+  year      = {1985}
+}
+
+@inproceedings{DBLP:conf/spdp/BohannonLS96,
+	author    = {Philip Bohannon and
+		Daniel F. Lieuwen and
+		Abraham Silberschatz},
+	title     = {Recovering scalable spin locks},
+	booktitle = {Proceedings of the Eighth {IEEE} Symposium on Parallel and Distributed
+		Processing, {SPDP} 1996, New Orleans, Louisiana, USA, October 23-26,
+		1996.},
+	pages     = {314--322},
+	year      = {1996}
+}
+
+@inproceedings{DBLP:conf/spdp/BohannonLS0G95,
+	author    = {Philip Bohannon and
+		Daniel F. Lieuwen and
+		Abraham Silberschatz and
+		S. Sudarshan and
+		J. Gava},
+	title     = {Recoverable user-level mutual exclusion},
+	booktitle = {Proceedings of the Seventh {IEEE} Symposium on Parallel and Distributed
+		Processing, {SPDP} 1995, San Antonio, Texas , USA, October 25-28,
+		1995},
+	pages     = {293--301},
+	year      = {1995}
+}
+
+@inproceedings{DBLP:conf/oopsla/ChakrabartiBB14,
+	author    = {Dhruva R. Chakrabarti and
+		Hans{-}Juergen Boehm and
+		Kumud Bhandari},
+	title     = {Atlas: leveraging locks for non-volatile memory consistency},
+	booktitle = {Proceedings of the 2014 {ACM} International Conference on Object Oriented
+		Programming Systems Languages {\&} Applications, {OOPSLA} 2014,
+		part of {SPLASH} 2014, Portland, OR, USA, October 20-24, 2014},
+	pages     = {433--452},
+	year      = {2014}
+}
+
+@article{DBLP:journals/tcs/AbrahamDHK01,
+	author    = {Uri Abraham and
+		Shlomi Dolev and
+		Ted Herman and
+		Irit Koll},
+	title     = {Self-stabilizing l-exclusion},
+	journal   = {Theor. Comput. Sci.},
+	volume    = {266},
+	number    = {1-2},
+	pages     = {653--692},
+	year      = {2001}
+}
+
+@inproceedings{KolliPSCW-Asplos2016,
+ author = {Kolli, Aasheesh and Pelley, Steven and Saidi, Ali and Chen, Peter M. and Wenisch, Thomas F.},
+ title = {High-Performance Transactions for Persistent Memories},
+ booktitle = {Proceedings of the Twenty-First International Conference on Architectural Support for Programming Languages and Operating Systems},
+ series = {ASPLOS},
+ year = {2016},
+ pages = {399--411},
+}
+
+@inproceedings{CoburnCAGGJW-Asplos2011,
+ author = {Coburn, Joel and Caulfield, Adrian M. and Akel, Ameen and Grupp, Laura M. and Gupta, Rajesh K. and Jhala, Ranjit and Swanson, Steven},
+ title = {{NV-Heaps}: Making Persistent Objects Fast and Safe with Next-generation, Non-volatile Memories},
+ booktitle = {Proceedings of the Sixteenth International Conference on Architectural Support for Programming Languages and Operating Systems},
+ series = {ASPLOS},
+ year = {2011},
+ pages = {105--118},
+}
+
+@inproceedings{VolosTS-Asplos2011,
+ author = {Volos, Haris and Tack, Andres Jaan and Swift, Michael M.},
+ title = {Mnemosyne: Lightweight Persistent Memory},
+ booktitle = {Proceedings of the Sixteenth International Conference on Architectural Support for Programming Languages and Operating Systems},
+ series = {ASPLOS},
+ year = {2011},
+ pages = {91--104},
+}
+
+@inproceedings{VenkataramanTRC-FAST2011,
+  title={Consistent and Durable Data Structures for Non-Volatile Byte-Addressable Memory.},
+  author={Venkataraman, Shivaram and Tolia, Niraj and Ranganathan, Parthasarathy and Campbell, Roy H},
+  booktitle={FAST},
+  volume={11},
+  pages={61--75},
+  year={2011}
+}
+
+@inproceedings{BoehmC-ISMM2016,
+ author = {Boehm, Hans-J. and Chakrabarti, Dhruva R.},
+ title = {Persistence Programming Models for Non-volatile Memory},
+ booktitle = {Proceedings of the 2016 ACM SIGPLAN International Symposium on Memory Management},
+ series = {ISMM},
+ year = {2016},
+ pages = {55--67},
+}
+
+@inproceedings{DBLP:conf/wdag/FriedmanHMP17,
+	author    = {Michal Friedman and
+		Maurice Herlihy and
+		Virendra J. Marathe and
+		Erez Petrank},
+	title     = {Brief Announcement: {A} Persistent Lock-Free Queue for Non-Volatile
+		Memory},
+	booktitle = {31st International Symposium on Distributed Computing, {DISC} 2017,
+		October 16-20, 2017, Vienna, Austria},
+	pages     = {50:1--50:4},
+	year      = {2017}
+}
+
+@article{DBLP:journals/pacmpl/CohenFL17,
+	author    = {Nachshon Cohen and
+		Michal Friedman and
+		James R. Larus},
+	title     = {Efficient logging in non-volatile memory by exploiting coherency protocols},
+	journal   = {{PACMPL}},
+	volume    = {1},
+	number    = {{OOPSLA}},
+	pages     = {67:1--67:24},
+	year      = {2017}
+}
+
+@inproceedings{Erez-et-al-DISC-17,
+  author    = {Michal Friedman and Maurice Herlihy and Virendra Marathe and Erez Petrank},
+  title     = {Brief Announcement: A Persistent Lock-Free Queue for Non-Volatile Memory},
+  booktitle = {Distributed Computing - 31st International Symposium ({DISC})},
+  year = 2017,
+}
+
+@inproceedings{DBLP:conf/asplos/NarayananH12,
+	author    = {Dushyanth Narayanan and
+		Orion Hodson},
+	title     = {Whole-system persistence},
+	booktitle = {Proceedings of the 17th International Conference on Architectural
+		Support for Programming Languages and Operating Systems, {ASPLOS}
+		2012, London, UK, March 3-7, 2012},
+	pages     = {401--410},
+	year      = {2012}
+}
+
+@inproceedings{DBLP:conf/vldb/SchwalbDUP15,
+	author    = {David Schwalb and
+		Markus Dreseler and
+		Matthias Uflacker and
+		Hasso Plattner},
+	title     = {NVC-Hashmap: {A} Persistent and Concurrent Hashmap For Non-Volatile
+		Memories},
+	booktitle = {Proceedings of the 3rd {VLDB} Workshop on In-Memory Data Mangement
+		and Analytics, IMDM@VLDB 2015, Kohala Coast, HI, USA, August 31, 2015},
+	pages     = {4:1--4:8},
+	year      = {2015}
+}
+
+@book{Taubenfeld:2006:SAC:1211700,
+	author = {Taubenfeld, Gadi},
+	title = {Synchronization Algorithms and Concurrent Programming},
+	year = {2006},
+	isbn = {0131972596},
+	publisher = {Prentice-Hall, Inc.},
+	address = {Upper Saddle River, NJ, USA},
+}
+
+@inproceedings{MaratheSBH-HotStorage2017,
+  title={Persistent Memcached: Bringing Legacy Code to Byte-Addressable Persistent Memory},
+  author={Marathe, Virendra J and Seltzer, Margo and Byan, Steve and Harris, Tim},
+  booktitle={9th USENIX Workshop on Hot Topics in Storage and File Systems (HotStorage)},
+  year={2017},
 }

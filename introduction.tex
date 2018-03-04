@@ -1,69 +1,108 @@
-
 \section{Introduction}
 
-\emph{Shared-memory multiprocessors} are now prevalent anywhere from high-end server machines, through desktop and laptop computers to smartphones, accelerating the shift to concurrent, multi-threaded software.
-Concurrent software involves a collection of threads, each running a separate piece of code, possibly on a different core. Since threads may be delayed because of a variety of reasons (such as cache-misses, interrupts, page-faults, and scheduler preemption),
-shared-memory multiprocessors are \emph{asynchronous} in nature.
+Shared-memory multiprocessors are asynchronous in nature.
+Asynchrony is related to reliability,
+since algorithms that provide nonblocking progress properties
+(e.g., lock-freedom and wait-freedom \cite{herlihy91waitfree})
+in an asynchronous environment with reliable processes
+continue to provide the same progress properties in the presence
+of \emph{crash failures}.
+This happens because a process that crashes
+permanently during the execution of the algorithm is indistinguishable
+to the other processes from one that is merely very slow.
+Owing to its simplicity and intimate relationship with asynchrony,
+the crash-failure model is almost ubiquitous in the treatment of
+concurrent algorithms.
 
-Asynchrony is also related to reliability, since asynchronous algorithms that provide nonblocking progress properties (e.g., lock-freedom and wait-freedom) in an asynchronous environment with reliable processes continue to provide the same progress properties when \emph{crash failures} are introduced.
-Informally speaking, this property holds because a process that crashes permanently at an arbitrary point in the execution of its algorithm is indistinguishable to the other processes from one that is merely very slow. Owing to its simplicity and intimate relationship with asynchrony, the crash-failure model is almost ubiquitous in the treatment of non-blocking shared memory algorithms.
+The attention to the crash-failure model has so far mostly neglected
+the \emph{crash-recovery} model, in which a failed process may be
+resurrected after it crashes.
+%The reason is that the crash-recovery model is poorly matched to
+%contemporary multi-core architectures with volatile SRAM-based caches
+%and DRAM-based main memories:
+%Any state stored in main memory is lost entirely in the event of
+%a system crash or power loss, and recording recovery information in
+%non-volatile secondary storage (e.g., hard disk drive or solid state drive)
+%imposes overheads that are unacceptable for performance-critical tasks,
+%such as synchronizing threads inside the operating system kernel.
+%
+%This separation between volatile main memory and non-volatile secondary storage has led to a partitioning of the program state into operational data stored using in-memory data structures, and recovery data stored using sequential on-disk structures such as transaction logs.
+%In the event of a system-wide failure, such as a power outage, in-memory data structures are lost and must be reconstructed entirely from the recovery data, making the software system that relies on them temporarily unavailable. As a result, the design of in-memory data structures emphasizes disposable constructs optimized for parallelism, in contrast to the structures that hold recovery data, which cannot be discarded upon a failure and which benefit less from parallelism since their performance is limited by the secondary storage.
+Recent developments foreshadow the emergence of new systems,
+in which byte-addressable \emph{non-volatile main memory} (\emph{NVRAM}),
+combining the performance benefits of conventional main memory
+with the durability of secondary storage,
+co-exists with (or eventually even replaces) traditional volatile memory.
+Consequently, there is increased interest in \emph{recoverable concurrent
+objects} (also called \emph{persistent} or \emph{durable}):
+objects that are made robust to crash-failures by allowing their operations
+to recover from such failures.
 
-The attention to the crash-failure model has so far mostly neglected the \emph{crash-recovery} model, in which a failed process may be resurrected after it crashes. The reason is that the crash-recovery model is poorly matched to multi-core
-architectures with volatile SRAM-based caches and DRAM-based main memories: Any state stored in main memory is lost entirely in the event of a system crash or power loss, and recording recovery information in non-volatile secondary storage (e.g., on a hard disk drive or solid state drive) imposes overheads that are unacceptable for performance-critical tasks, such as synchronizing threads inside the operating system kernel.
-
-This separation between volatile main memory and non-volatile secondary storage has led to a partitioning of the program state into operational data stored using in-memory data structures, and recovery data stored using sequential on-disk structures such as transaction logs.
-In the event of a system-wide failure, such as a power outage, in-memory data structures are lost and must be reconstructed entirely from the recovery data, making the software system that relies on them temporarily unavailable. As a result, the design of in-memory data structures emphasizes disposable constructs optimized for parallelism, in contrast to the structures that hold recovery data, which cannot be discarded upon a failure and which benefit less from parallelism since their performance is limited by the secondary storage.
-
-Recent developments in non-volatile main memory (NVRAM) media foreshadow the eventual convergence of primary and secondary storage into a single layer in the memory hierarchy, combining the performance benefits of conventional main memory with the durability of secondary storage. Traditional log-based recovery techniques can be applied correctly in such systems but fail to take full advantage of the parallelism enabled by allowing processing cores to access recovery data directly using memory operations rather than slow block transfers from secondary storage.
-
-In this paper we investigate how the performance benefits of NVRAM can be harnessed for improving the robustness of shared-memory programs by allowing concurrent algorithms to efficiently recover from crash failures. This challenge requires a careful rethinking of recovery mechanisms and involves addressing both foundational and algorithmic research questions. Our emphasis would be on direct, non-transactional, approaches of implementing algorithms for \emph{recoverable concurrent} (also called \emph{persistent}) objects.
-More specifically, we formulate an abstract model of NVRAM shared-memory multiprocessors, and discuss known correctness and progress conditions, while proposing a new property called \textit{recoverable-response linearizability}. We then discuss the theoretic limitations of these systems, on the one hand, and construction of concurrent algorithms that support effective recovery from crash failures, on the other hand. We focus on construction of recoverable versions of primitive memory operations such as read, write, swap, compare-and-swap and fetch-and-add, deriving upper and lower bounds, and how these recoverable versions can be used to implement various applications.
-
-\remove{
-In the rest of this section, we provide required background.
-First, we briefly describe the standard shared-memory model.
-This is followed by a survey of correctness conditions that
-were proposed in recent years for defining the behavior
-of recoverable concurrent objects.
-We then survey previous work on transactional access to recoverable
-concurrent objects as well as more direct, non-transactional,
-implementations of such objects.}
+In this paper, we present a novel abstract individual-process crash-recovery model for non-volatile memory, inspired by a model introduced by Golab and Ramaraju for studying the \emph{recoverable mutual exclusion} (RME) problem~\cite{GolabR16}. Our model enables the composition of recoverable objects, so that complex recoverable objects can be constructed in a modular manner from simpler recoverable base objects.
+We assume that processes communicate via persistent shared-memory variables.
+Each process also has local variables stored in volatile processor registers. At any point, a process may incur a crash-failure, causing all its local variables to be reset to arbitrary values.
+A key challenge with which recovery code must cope in our model is
+that operation response values are returned via volatile
+processor registers. Hence, they may become inaccessible to the calling process if it fails just before persisting the response value. Each recoverable operation $Op$ is associated with a \emph{recovery function} that is responsible for completing $Op$ upon recovery from a crash-failure.
+%Our model enables the composition of recoverable objects,
+%so that complex recoverable objects can be constructed in a modular manner from simpler recoverable base %objects.
 
 
+Several correctness conditions for the crash-recovery model were defined in recent years (see, e.g., \cite{Aguilera2003StrictLA,DBLP:conf/opodis/BerryhillGT15,DBLP:conf/icdcs/GuerraouiL04,DBLP:conf/wdag/IzraelevitzMS16}). The goal of these conditions is to maintain the state of concurrent objects consistent in the face of crash failures. However,
+guaranteeing object consistency is insufficient for composability.
+%none of them guarantees composability. Composability requires that the recovery code is always able to infer whether the failed operation completed or notand, if so, to obtain its response value. Inferring this may be challenging, since operation responses are returned via volatile processor registers.
+To illustrate this point, consider a base object $\cal{B}$ that supports 
+atomic \emph{compare\&swap} (CAS) and \emph{read} operations.
+Suppose that an operation $Op$ by some recoverable object $\cal{O}$ invokes ${\cal{B}}.compare\&swap(old,new)$
+in its algorithm which, upon completion,
+should return a success or failure response.
+Suppose also that some process $p$ crashes inside $Op$, immediately after it invokes
+${\cal{B}}.compare\&swap(old,new)$.
+Since the CAS operation is atomic, the consistency of ${\cal{B}}$ is ensured in
+spite of $p$'s failure: either the CAS took effect before the failure, or it did not. 
+%Consequently, the resulting execution complies with the above definitions.
+However, the consistency of ${\cal{B}}$ is insufficient, since once $p$ recovers from the 
+crash, it has no way of knowing whether the CAS succeeded or not, as its response was written to a volatile local variable that was lost because of the crash. Reading ${\cal{B}}$ will not help, since even if \emph{new} was written before the crash, it may have been overwritten by other processes since then. $Op$   may therefore not be able to proceed correctly.
 
-\subsection{Related work}
+To address this issue, we define within the framework of our model
+the notion of \emph{composable recoverable linearizability} (CRL),
+a novel correctness condition that captures the requirements
+for recoverable objects composability.
+Informally, CRL allows the recovery code to extend the interval
+of the failed operation until the recovery code succeeds to complete
+(possibly after multiple failures and recovery attempts). CRL implies that,
+following recovery, an implemented (higher-level) recoverable operation
+is able to complete its invocation of a base-object operation and obtain its response.
+%It requires a transactional effect guaranteeing that
+%either the operation is linearized at some point between its invocation
+%and the completion of recovery code or it has no effect.
 
-When an application implements a concurrent data structure, it is necessary to specify its \emph{semantics}, namely, the properties provided by values it returns, which determine the feasibility and complexity of implementing it. The \emph{correctness} condition of a concurrent data structure specifies how to derive the semantics of concurrent implementations of the data structure from the corresponding \emph{sequential specification} of the data structure. This requires to disambiguate the expected results of concurrent operations on the data structure.
+%A key challenge with which recovery code must cope in our model is
+%the following: operation response values are returned via volatile
+%processor registers and may therefore become inaccessible to the
+%calling process if it fails just before persisting the response value.
 
-Two common ways to do so are \emph{sequential consistency}~\cite{LamportSC} and \emph{linearizability}~\cite{herlihyWingLinearizability}. Both require that the values returned by the operations appear to have been returned by a sequential execution of the same operations; sequential consistency only requires this order to be consistent with the order in which each individual thread invokes the operations, while linearizability further requires this order to be consistent with the real-time order of non-overlapping operations. The standard shared-memory model assumes that shared memory is linearizable or at least sequentially consistent.
+%The CRL condition implies that, following recovery, a process is able to complete its
+%operation and obtain its response.
 
-Linearizability is ill-equipped to specify the correctness criteria for implementations that support crash-recovery failures, since linearizability has no notion of an aborted or failed operation, and requires that a process finish one operation before it invokes the next. Extended versions of linearizability or, more generally, alternative definitions are required for specifying correctness for such implementations.
+We present several algorithms for \emph{composable recoverable primitive objects},
+recoverable versions of widely-used primitive shared-memory operations such as
+read, write, test-and-set and compare-and-swap,
+that can be used by higher-level recoverable objects.
+We also provide an example of how these recoverable base objects can be
+used for constructing a recoverable counter object.
 
-Aguilera and Fr{\o}lund~\cite{Aguilera2003StrictLA} proposed \emph{strict linearizability} as a correctness condition for persistent concurrent objects,
-which treats the crash of a process as a response, either successful or unsuccessful, to the interrupted operation. A successful response means that the operation takes effect at some point between its invocation and the crash failure, and an unsuccessful response means that the operation does not take effect at all.
-Strict linearizability preserves both \emph{locality}~\cite{herlihy91waitfree}
-and program order. Although this property seems like a natural extension for linearizability, Aguilera and Fr{\o}lund proved that unlike linearizability it precludes the implementation of some wait-free objects for certain machine models:
-there is no wait-free implementations of multi-reader single-writer (MRSW) registers from single-reader single-writer (SRSW) registers under strict linearizability.
+In addition, we prove an impossibility result on wait-free implementations of recoverable test-and-set (TAS) objects from read, write and TAS operations, thus demonstrating that our model also facilitates
+rigorous analysis of the limitations of recoverable concurrent objects.
 
-Guerraoui and Levy~\cite{DBLP:conf/icdcs/GuerraouiL04} proposed \emph{persistent atomicity}. It is similar to strict linearizability, but allows an operation interrupted by a failure to take effect before the subsequent invocation of the same process, possibly after the failure. They also proposed \emph{transient atomicity}, which relaxes this criterion even further and allows an interrupted operation to take effect before the subsequent write response of the same process. Both conditions ensure that the state of an object will be consistent in the wake of a crash, but they fail to provide locality: correct histories of separate objects, when merged, will not necessarily yield a correct composite history.
-
-Guerraoui and Levy properties capture, in some sense, the flexibility of implementations which uses helping mechanism, where an interrupted operation by some failed process $p$ can be completed by a different process after $p$ crashes. Hence, we would like to have the option to set the linearization point after the crash of $p$, where strict linearizability does not allow so. Moreover, Censor-Hillel et al. \cite{DBLP:conf/podc/Censor-HillelPT15} formalised the notion of helping, and proved that some objects, when implemented wait-free, must use an helping mechanism.
-
-In addition, it is not clear how to generalize transient atomicity to a general object which does not support a write operation, as the definition explicitly uses write operation in order to determine the allowed interval for the linearization point. Moreover, transient atomicity allows a scenario where a process $p$ crash during an operation on object $X$, then recovers and complete a read operation on $X$, while the linearization point of the interrupted operation is set to after the read. That is, we get a history where $p$ executes two overlapping operations on the same object, causing a program order inversion, and violets the well-formedness property (defined in Section...), which is in the heart of the linearizability definition.
-
-In order to overcome the above drawbacks Berryhill et al. \cite{DBLP:conf/opodis/BerryhillGT15} proposed an alternative condition, called \emph{recoverable linearizability}, which achieves locality but may sacrifice program order after a crash. It is a relaxed version of persistent atomicity, which requires the operation to be linearized or aborted before any subsequent linearization by the pending thread on that same object.
-
-Izraelevitz et al.~\cite{DBLP:conf/wdag/IzraelevitzMS16} considered a real-world failure model, in which processes are assumed to fail together, as part of a full-system crash. Under this model, persistent atomicity and recoverable linearizability are indistinguishable (and thus local). The term \emph{durable linearizability} was used to refer to this merged consistency condition under the restricted failure model.
-
-The goal of all correctness conditions defined above for the crash-recovery model is to maintain the state of concurrent objects consistent in the face of crash failures. However, to the best of our knowledge, none of them guarantees that the recovery code is always able to infer whether the failed operation completed and, if so, to obtain its response value.
-Inferring this  may be challenging, since function responses are returned via volatile processor registers.
-
-As a simple example, consider a base object $\cal{B}$ that supports the \emph{read} and \emph{write} operations. Suppose that a process $p$ crashes while performing a ${\cal{B}}.write(v)$ operation, which, upon completion, should returns \emph{ack}. Since the write is atomic, there is no problem in ensuring the consistency of ${\cal{B}}$ in spite of $p$'s failure: either the write took effect before the failure, or it did not. However, in this case, once the process recovers from the failed \emph{write} operation it has no way of knowing whether the write occurred or not. This is because $p$ cannot tell whether the failure occurred before $v$ was written to NVRAM or whether it occurred after $v$ was written to NVRAM (and was possibly then overwritten) but the \emph{ack} value, written to a volatile local variable, was lost because of the failure. Without this knowledge, if the failed \emph{write} operation on $\cal{B}$ was applied by an operation of another recoverable object $\cal{O}$, $\cal{O}$ may not be able to recover correctly.
-
-To address this problem, we consider the model proposed by Golab and Ramaraju for investigating mutual exclusion \cite{gr:rme} and later used by \cite{DBLP:conf/podc/GolabH17,Jayanti-DISC-17}, which is the following. A set of asynchronous processes communicate by accessing atomic \emph{non-volatile shared-memory variables}. In addition, each process has \emph{volatile private variables} stored in processor registers. \emph{Processes are unreliable} in the following sense: at any point in time, while executing a concurrent object function, a process $p$ may incur a crash failure, causing all its local variables to be reset to arbitrary values.
-
-A concurrent object is called \emph{recoverable}, if it implements a \texttt{Recover} function that is responsible for fixing its internal state following a failure and allows it to either correctly complete its failed operation and obtain its response value, or re-try it, so it may proceed to perform its next operation. If the failure occurs while $p$ executes an operation of a recoverable object, then, upon resurrecting $p$, the application or operating system guarantees that $p$'s execution proceeds by executing the object's \texttt{Recover} function. It is assumed that the \texttt{Recover} function has access to the value of $p$'s program counter at the time of the failure. \emph{We note that knowledge of the last PC value leaves uncertainty regarding whether that last instruction was performed or not and, if it was, what its return value was.}
-
-We propose a new correctness property called \emph{recoverable response linearizability} (RR-linearizability). Informally, RR-linearizability allows the recovery code to 'extend' the interval of the failed operation until the end of the recovery code. It requires a transactional effect guaranteeing that either the operation is linearized at some point between its invocation and the end of recovery code (which may attempt to complete it), or the operation has no effect. In addition, unlike previous definitions, RR-linearizability requires also that, following recovery, process $p$ is able to determine whether the operation was linearized or not and, if it was, what its response value is.
-
+\remove{%%%%%%%
+Similarly to how the standard shared-memory model abstracts away
+the need for using barriers required for maintaining program order,
+our model abstracts away the need for using persistence barrier instructions.
+While low-level barrier instructions are required in real-world
+multiprocessors, the more abstract model allows capturing
+many of the theoretical limitations of real-world systems,
+as well as devising concurrent algorithms that can be adapted relatively
+easily to work on them.
+} %%%%%%%%%% END REMOVE
 

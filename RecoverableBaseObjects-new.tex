@@ -1,0 +1,291 @@
+
+\section{Recoverable Base Objects}
+\label{section: Recoverable Base Objects}
+
+We consider a model in which the program counter (PC) is stored in the non-volatile memory. This can be done either explicitly in the program, or implicitly by the operating system. In this model, upon recovery the last PC is available, and the system knows during what operation the process crash, and thus the proper \texttt{Recover} function is invoked. As a result, there is uncertainty regarding whether the last instruction was performed or not. We also assume the \texttt{Recover} function has an access to the last PC before the crash, or in other words, it is aware of at what line the crash took place.
+
+The following example clarify why do we need the definition of recoverable object to hold even in the case of primitives.
+Consider an object supporting a compare-and-swap (CAS) atomic operation. Assume a process $p$ is executing an operation $res \leftarrow C.CAS(old,new)$ followed by a crash. There are several options for at what exact time the crash took place, and each case raises a different problem.
+
+In the standard crash model, a primitive operation is atomic and takes effect instantly in the history, that is, the response follows the invocation in the history, where no other step by any other process is allowed in between. Under the same definition, and assuming the process crash just after completing the CAS operation and before advancing the PC, there was a response step in the history, and thus the RR-linearizability does not require the process to recover the operation. However, the operation is still pending in some sense, as upon recovery the process does not know whether it took affect or not, since the PC still points the same line and $res$ content was erased.
+
+Considering the response of the CAS operation to be at the time where the PC is being advanced solves the former problem. Nevertheless, what if the process crash just after the PC was changed? Again, the operation is not pending, so there is no need to recover it. In this case, upon recovery the process knows the operation was completed, since the PC no longer points to it. However, the process have no access to the response value that was stored in $res$, residing in the cache, and hence it may not be able to proceed its execution.
+
+A recoverable version of CAS avoids the above problems. The operation considered to be complete only after both the CAS was linearized, and the response value is persistent in $Res_p$. Therefore, a crash after this point can cause no problem, as the process knows the operation was completed as well as have an access to the response value.
+
+In the following section we present algorithms for implementing recoverable versions for well known primitives. A system equipped with such primitives can be used to implement any object in a recoverable way in the following manner: in case of a crash, the process will simply recover the last primitive operation along which the process crashed. Once the operation complete, the process can continue and execute the remaining code safely. Due to this observation we focus our attention to implementation of recoverable primitives.
+
+The strongest progress property is bounded wait-free, that is, the number of steps a process takes when executing the recovery code in the absence of a failure is finite and bounded by a known constant (may be a function of n, the number of processes in the system), regardless of the other processes steps and the failures the process experienced so far. In addition, we would like the recovery code to use a finite number of variables.
+Nonetheless, this progress property can not always be achieved, and therefore in some cases we weaken our demand to deadlock-freedom, that is, a process is allowed to wait in the recovery code, and if all processes are taking enough steps then eventually the process will finish its recovery code.
+%The fact that RR-linearizability allows us to swift the linearization point of an operation to after the crash is used to recover after a primitive failure.
+
+The recoverable object definition requires the response value to be persistent for any operation. However, this requirement is inefficient in case of a trivial response as $ack$. In this case there is no point to save the response value in the non-volatile memory, as the only information relevant for the process is whether the operation was complete or not. For such an operation we define the response step to be at the point where to PC no longer points the code implementing the operation, and we do not persist the response value. This observation can be used for any operation with a trivial response, even though the recoverable object definition is general and does not handle this case separately.
+
+In addition, the question of having a crash along a \texttt{Recover} function needs to be address. One option is to assume a crash can not occur along executing a \texttt{Recover} function. In practice it might be reasonable to assume a short time of stability in the system following a crash. However, we wold like to have a stronger model, capable of dealing with crash even along a \texttt{Recover} function. In the following implementations, in case of a crash along the \texttt{Recover} function the process will simply restart it upon recovery. That is, there is no need for a recover mechanism for the \texttt{Recover} function itself.
+
+
+In the following we use the convention of capital letters names for shared variables and lowercase for local variables. In addition, capital letters are used to refer an operation implementation, and lowercase to refer the respective primitive. A restart response of the \texttt{Recover} function implies the operation was not linearized and the process restart it (by moving back to the operation's first line). During the analysis we ignore the ABA problem, as this can be solved easily by augmenting any value with the writing process's id, and a private sequential number. This way we can guarantee no two identical values are used along any execution.
+
+
+\paragraph*{Write}
+For write, we "wrap" the write primitive with a mechanism which allows a process to conclude whether its write or a different write took place since the invocation. For that, process $p$ have a designated variable $R_p$ in the non-volatile memory. The same variable can be used for all write operations of process $p$.
+
+\begin{varalgorithm}{Write}
+	\caption{program for process $p$}
+	\label{alg:recoverable-write}
+	
+	\hspace*{\algorithmicindent} \textbf{Shared variables:}
+	$R_p$: composed of two fields, init $<0,null>$
+	
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]	
+		\Procedure{WRITE(val)}{}
+		\State $temp \gets R$
+		\State $R_p \gets <1,temp>$ \label{write-first}
+		\State $R \gets val$
+		\State $R_p \gets <0,val>$ \label{write-second}
+		\State \Return $ack$
+		\EndProcedure
+		
+		\columnbreak
+		
+		\Procedure{RECOVER()}{}
+		\State $<flag, curr> \gets R_p$
+		\If {$flag = 0$ and $curr \neq val$}
+			\Return restart
+		\EndIf
+		\If {$flag = 1$ and $curr = R$}
+			\Return restart
+		\EndIf
+		\State $R_p \gets <0,val>$
+		\State \Return $ack$
+		\EndProcedure
+	\end{algorithmic}
+\end{multicols}
+\end{varalgorithm}
+
+Notice that $flag=0$ whenever $p$ is not performing a WRITE operation, as it is initialise to 0, and before completing a WRITE operation (either in the WRITE code or in the \texttt{Recover} function), flag is set back to 0.
+
+The intuition for correctness is the following. A crash before line \ref{write-first} implies $R_p = <0,curr>$ where $curr \neq val$, since we assume no two identical values are ever written. In this case the \texttt{Recover} function restart the operation. A crush after line \ref{write-second} implies $R_p=<1,val>$, and in this case the \texttt{Recover} function returns $ack$. A crash between the two implies $R_p=<1,curr>$, where $curr \neq val$.
+If there was a write to $R$ between the two reads of $R$ by $p$ (at the WRITE operation and at the \texttt{Recover} function) then either $p$ wrote to $R$, and we can linearize the WRITE at this point, or there was a write by some other process, and we can linearize the WRITE of $p$ just before it. Hence, the real write "overwrite" $p$'s write, and the rest of the processes can not distinguish between the two scenarios. In any case, we get $curr \neq R$, and the \texttt{Recover} function consider the operation as done.
+
+\begin{claim}
+	The WRITE implementation given in Algorithm~\ref{alg:recoverable-write} is CRL.
+\end{claim}
+
+\begin{proof}
+	First notice the implementation is wait-free and has a constant time complexity for both the WRITE and the \texttt{Recover}. Also, the implementation is recoverable - any operation is equipped with a \texttt{Recover} function. As discussed earlier in the section, since the response is trivial we weaken our demand and do not require a process to write the response to $Res_p$.
+	
+	Consider some execution $\alpha$. We assume whenever a process crash, once it recovers the system triggers the appropriate \texttt{Recover} function if there is a pending operation. Therefore, the corresponding history $H$ describing the execution $\alpha$ is recoverable well-formed, and after removing all crash and recover steps we get a well formed history $H'$. Following definition \ref{Definition: RR-linearizability}, it is enough to prove $H'$ is also linearizable.
+	
+	Since the \texttt{Recover} function only reads or write to $R_p$ it does not effect other processes. That is, if a process crash along the \texttt{Recover} function then restarting it does not effect other processes.
+	Hence, the proof can ignore crashes along the \texttt{Recover} function as long as there is no write to $R_p$.
+	Assume $p$ performs operation $WRITE(val)$ to variable $R$ in $\alpha$. If $p$ does not crash along the operation, then obviously $p$ writes to $R$ once in the WRITE operation, and this is also the linearization point.
+	
+	Assume now there is a crash along the WRITE operation. 
+	A crash before line \ref{write-first} implies $p$ did not wrote neither to $R_p$ nor to $R$. Upon recovery $p$ reads $R_p=<0,curr>$ where $curr \neq val$, since we assumed no two identical values are written. Hence the \texttt{Recover} function restarts the WRITE code.
+	A crash between the two writes to $R_p$ implies $R_p=<1,curr>$ where $curr \neq val$. Upon recovery, reading $curr = R$ implies no process wrote to $R$ between the two reads of $R$, in line 2 and in the \texttt{Recover} function. In particular, $p$ did not wrote to $R$ and the WRITE operation is restarted. Otherwise $curr \neq R$, i.e., there was a write to $R$ between the two reads of $R$. If $p$ wrote to $R$ in the WRITE code, then we can linearize the operation at this point. Otherwise, there is a write by a different process $q$ who took effect. Linearizing $p$'s operation just before $q$ operation, causing $q$ to overwrite the value of $p$, generates a history which is indistinguishable to all process from one where $p$ does not write at all. In case there are several such operations that needs to be linearize before $q$'s operation, we can linearize them in any order, and the same argument holds. In any case, we can linearize $p$'s operation while respecting the sequential specification, and the \texttt{Recover} function returns $ack$.
+	Reading $R_p = <0,val>$ implies either $p$ crash after line \ref{write-second}, or that the crash was before and there is a \texttt{Recover} execution which wrote to $R_p$. The later happens only when a \texttt{Recover} function reads $R_p=<1,curr>$ and $curr \neq R$, and following the previous analysis, in such a case there is a linearization point for the WRITE operation.
+\end{proof}
+
+
+\paragraph*{Compare-and-Swap}
+
+A Compare-and-Swap (CAS) object supports the $CAS(old,new)$ operation, which atomically sets the value of the object to $new$ only if the value it stores is $old$. The operation returns true if the operation succeeded (the write took effect), and false otherwise. CAS object also support a READ operation which returns the value stored in the object.
+
+The main idea is a process first write the value stored in the object before applying the cas primitive. This way, processes informs each other which CAS operations were successful.
+A process $p$ first read the CAS object. If it observes a value different then $old$ it returns false. In such case, the operation is linearized at the read. Otherwise, $p$ informs the last process who committed a successful CAS (before the read) his operation was successful by writing to a designated location in the non-volatile memory. This way, if $p$ crash after a successful CAS operation, the next process to change the value of the CAS, first needs to inform $p$ his CAS was successful. Therefore, upon recovery $p$ can identify its CAS took affect, either because his new value stored in $C$, or some other process informed him about a success.
+
+\begin{varalgorithm}{Compare-and-Swap}
+	\caption{program for process $p$}
+	\label{alg:recoverable-CAS}
+	
+	\hspace*{\algorithmicindent} \textbf{Shared variables:}
+	\begin{itemize}[noitemsep,topsep=0pt]
+		\item C: compare-and-swap object, init $<null,null>$
+		\item R[N][N]: two dimensions array, init $[null,\ldots,null],\ldots,[null,\ldots,null]$
+	\end{itemize}
+
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]
+		\Procedure{CAS(old,new)}{}
+		\State $<id,val> \gets C.read()$
+		\If {$val \neq old$}
+		\State $Res_p \gets false$
+		\State \Return false
+		\EndIf
+		\If {$id \neq null$}
+  		\State $R[id][p] \gets val$
+		\EndIf
+		\State $ret \gets C.cas(<id,val>, <p,new>)$
+		\State $Res_p \gets ret$
+		\State \Return $ret$
+		\EndProcedure
+		
+		\columnbreak
+		
+		\Procedure{RECOVER()}{}
+		\State Read C, R[p][$*$]
+		\If {$<p,new>$ appears in C, or $new$ appears in R[p][$*$]}
+		\State $Res_p \gets true$
+		\State \Return $true$
+		\Else {}
+		\State \Return $restart$
+		\EndIf
+		\EndProcedure
+	\end{algorithmic}
+\end{multicols}
+\end{varalgorithm}
+
+
+Following the \texttt{Recover} function, if a process crash before applying the cas primitive it will restart its operation, while a recovery from a crash after applying the cas primitive depends on whether the CAS was successful. A key point in the implementation is that a fail CAS operation can be reissued anyway, since it does not effect other processes and thus reissuing it does not violate the sequential specification of the object.
+
+\begin{claim}
+	The recoverable CAS implementation given in Algorithm~\ref{alg:recoverable-CAS} is CRL.
+\end{claim}
+
+\begin{proof}
+	
+	First notice the implementation is wait-free and has a constant time complexity for both CAS and \texttt{Recover}. Also, the implementation is recoverable - any operation is equipped with a \texttt{Recover} function.
+	Consider some execution $\alpha$. We assume whenever a process crash, once it recovers the system triggers the appropriate \texttt{Recover} function if there is a pending operation. Therefore, the corresponding history $H$ describing the execution $\alpha$ is recoverable well-formed, and after removing all crash and recover steps we get a well formed history $H'$. Following definition \ref{Definition: RR-linearizability}, it is enough to prove $H'$ is also linearizable.
+	
+	Let $p$ be a process performing $CAS(old,new)$ in $\alpha$. Notice that a CAS value is composed of two fields, an id field stores the last process to perform a successful CAS, and a value field.
+	Assume $p$ does not crash along the CAS operation.
+	First, $p$ reads the content of $C$. If the value store in $C$ is not $old$ then $p$ returns false, and the operation is linearize at the time of the read. Otherwise, it informs the process who last wrote to $C$ his CAS was successful by writing to $R[id][p]$ the value it sees. A two dimensional array is used so that processes will not overwrite each other. Then $p$ tries to change the value of $C$ by performing cas, while considering the id field of the CAS. The operation is linearize at the time of the cas primitive. These are the only two options for linearization points. If there is a linearization point of a successful cas between the read and the cas of $p$, then since we assumed no two identical values are ever written, this implies the value of $C$ is not $old$ at the time when $p$ performs the cas, and indeed the operation returns false. Otherwise, there is no successful cas between the read and cas of $p$, therefore the value of $C$ at the time of the cas is $old$, and the operation returns true. In any case, this linearization point respects the sequential specification of CAS.
+	 
+	Assume $p$ does crash along a CAS operation. Since the \texttt{Recover} function only reads or write to $Res_p$ which is a private variable of $p$, executing the \texttt{Recover} function does not effect other processes. Therefore, if a process crash along the \texttt{Recover} function, then restarting it is indistinguishable to other processes from executing it only once. Hence, it is enough to consider the point where $p$ executes the entire \texttt{Recover} function with no crash.
+	
+	If $p$ did not wrote to $C$, either because the crash was before the cas primitive or a failed cas, then the value $new$ of $p$ will never be written to neither $C$ nor $R[p][*]$. This follows from the fact that processes writes only values they have seen in $C$. As a result, the \texttt{Recover} function of $p$ will return restart. Linearizing a failed CAS operation does not effect the other processes, that is, removing this operation is indistinguishable to other processes. Therefore, in both cases, considering the operation as not having a linearization point so far and restarting it does not violate the sequential specification of CAS.
+	
+	If $p$ did wrote to $C$, then the next process $q$ to successfully perform cas to $C$ must also write to $R[p][q]$ the value $new$. Since a process performs cas only when it executes the entire CAS operation from start to the cas with no failure (in case of a failure it either restart or return), consider the interval of $q$ performing the CAS operation from the beginning to the successful cas, with no crash. If $q$ read $C$ before the successful cas of $p$, then the value $val$ it reads is different then $new$ of $p$ (no two identical values are written). In particular, the value $val$ is also different then the value field of $C$ at the time when $q$ performs the cas, contradicting the fact that the cas was successful. Therefore, $q$ read $C$ only after $p$ writes to it, and by our assumption there is no other write to $C$ between the write of $p$ and the read of $q$ (as it the next one to perform a successful cas). It follows that $q$ read $<p,new>$ from $C$, and thus write $R[p][q] \gets new$ before performing the cas.
+	To conclude, before replacing the value of $p$ stored in $C$ with a new value, it must be that some other process already wrote to $R[p][*]$ the new value of $p$. Hench, when $p$ executes the \texttt{Recover} function, either it will see in $C$ the value it wrote, or that this value has been replaced with a different one, and therefore it will see in $R[p][*]$ the last value it wrote to $C$. In both cases, $p$ consider the cas operation as successful, and returns true. The linearization point of the operation is at the successful cas primitive.
+	 
+\end{proof}
+
+\paragraph*{Test-and-Set}
+
+A Test-and-Set (TAS) object initially stores the value 0, and supports the $T\&S$ operation which atomically change the value of the object to 1 and returns the previous value. A TAS object can be easily implemented using a single CAS object. However, we would like to support an implementation which only uses TAS and read/write primitives in case a process does not crash. It is possible to prove that given only TAS and read/write registers one can not implement a recoverable TAS which is also bounded wait-free, thus the \texttt{Recover} function will use waiting mechanism.
+
+We use a doorway mechanism in order to make sure once a process goes through the doorway, all future operations returns 1. This way, we can guarantee the operation who returns 0 can be linearize before any other operation. The doorway can be replaced by reading $T$, in case it supports also read.
+A process tries to win the TAS object, and the winning process writes its id into a designated variable $Winner$. Once a process writes to $Winner$ any process can recover by simply read $Winner$. Hence, the main difficulty is to make sure only one process writes to $Winner$, and this is the only process to return 0.
+
+At the beginning of the \texttt{Recovery} function, process $p$ first close the $Doorway$, and then announce it is recovering by writing 2 into $R[p]$. In case the crash took effect before the $t\&s$ on $T$ in the $t\&s$ operation, $p$ performs $t\&s$ on $T$ to make sure no process can win the TAS object from this point on. As discussed above, if $Winner$ was written to then $p$ can know if it is the process to win $T$ by comparing its id to the one in $T$. However, if $Winner$ was not written to, all crashed processes needs to agree on the winner. For that, we use a CAS object for simplicity, although any recoverable leader election algorithm can be used here (for example, one that only uses reads and writes). Notice that there is no need to use recoverable CAS here, since in a crash along the \texttt{Recovery} function, the process can simply restart the function.
+
+Once $p$ wins the CAS, it is the only crashed process to win, and therefore it is the candidate to win the TAS object. However, it might be that some other process already won the TAS, but yet to write to $Winner$. To overcome this scenario, $p$ waits for every active process to either finish its t\&s operation, or to start the \texttt{Recovery} function. We know that any process who will run starting from this point will lose the TAS object, and the CAS object (in case of a crash). Thus, if after the for loop no process wrote to $Winner$ then $p$ can safely announce itself as the winner. Otherwise, $p$ lost to some other active process, and this process wrote to $Winner$ since it won the TAS object in line 3.
+
+
+\begin{varalgorithm}{Test-and-Set}
+	\caption{program for process $p$}
+	\label{alg:recoverable-TAS}
+	
+	\hspace*{\algorithmicindent} \textbf{Shared variables:}
+	\begin{itemize}[noitemsep,topsep=0pt]
+		\item T: Test-and-Set object, init $0$
+		\item C: Compare-and-Swap object, init $null$
+		\item R[N]: an array, init $[0,\ldots,0]$
+		\item Winner, Doorway: registers, init $null$
+	\end{itemize}
+	
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]
+		\Procedure{T\&S()}{}
+		\If {$Doorway \neq null$}
+			\State $Res_p \gets 1$
+			\State \Return $1$
+		\EndIf
+		\State $R[p] \gets 1$
+		\State $Doorway \gets 1$
+		\State $ret \gets T.t\&s()$
+		\If {$ret = 0$}
+			\State $Winner \gets p$
+		\EndIf
+		\State $Res_p \gets ret$
+		\State $R[p] \gets 2$
+		\State \Return $ret$
+		\EndProcedure
+		
+		\columnbreak
+		
+		\Procedure{RECOVER()}{}
+		\If {$R[p] = 0$}
+			\State $restart$
+		\EndIf
+		\State $Doorway \gets 1$
+		\State $R[p] \gets 2$
+		\State $T.t\&s()$
+		\If {$Winner \neq null$}
+			\State $ret \gets (Winner \neq p)$
+			\State \textbf{go to} line \ref{return code}
+		\EndIf
+		\State $C.cas(null,p)$
+		\If {$C \neq p$}
+			\State $ret \gets 1$
+			\State \textbf{go to} line \ref{return code}
+		\EndIf
+		\For {$i$ from $0$ to $N$}
+			\State $await(R[p] \neq 1)$
+		\EndFor
+		\If {$Winner = null$}
+			\State $Winner \gets p$
+		\EndIf
+		\State $ret \gets (Winner \neq p)$
+		\State $Res_p = ret$ \label{return code}
+		\State \Return $ret$
+		\EndProcedure
+	\end{algorithmic}
+\end{multicols}
+\end{varalgorithm}
+
+
+\paragraph*{Read}
+
+Following the formal definition of RR-linearizability, a process needs to write the value it reads to $Res_p$ in order to implement a recoverable read. However, such an implementation is redundant and inefficient. In case a process crash before completing its read operation it can simply reissue it upon recovery.
+In general, operations that only read the status of an object and does not change it (more formally, operation that can be commute with any other operation by a different process), usually uses only read primitive (e.g., snapshot), or at least are implemented in a way such that if a process crash in the middle of an operation then reissue it does not affect the rest of the processes. In such cases, one can implement a recoverable version of the operation by having the \texttt{Recover} function restarting the operation.
+
+We now present a way to use these observations in order to implement a recoverable counter in an efficient way. A \textit{counter} object supports an $INC$ operation which atomically adds 1 to the counter value. It also supports a $READ$ operation which returns the counter's value. We first describe a simple implementation which is linearizable under the standard model, and then discuss the changes required for making the implementation also CRL (see Algorithm~\ref{alg:recoverable-counter}).
+
+%The implementation uses a single array $R$ of size $N$, the number of processes in the system. Each process $p$ has its own entry $R[p]$. For $INC$, a process $p$ simply adds 1 to the value in $R[p]$ by reading and then writing the updated value. The write is also the linearization point of the operation. For $READ$, process $p$ reads the entire array $R$ in a sequential manner, and sum up the values.
+
+Process $p$ has its own location in an array $R[p]$, which is initialise to 0. For a $INC$ operation, $p$ simply adds 1 to the value of $R[p]$ (by reading and then writing). For $READ$ operation, $p$ simply reads the entire array in a sequential manner, and sum-up the values it see.
+The correctness argument is as follows. Assume a process $p$ completes a $READ$ operation. Let $v$ be the value it reads from $R[q]$. Since $R[q]$ is monotonically increasing, it must be that $R[q] \leq v$ at the $READ$ invocation and $R[q] \geq v$ at the $READ$ response. Therefore, there are at most $v$ $INC$ operations of $q$ that are linearized before the $READ$ invocation, and at least $v$ $INC$ operations of $q$ that are linearized before the $READ$ response. As this is true for any $q$, it implies that if $p$ sum up the value $val$, then there are at most $val$ $INC$ operations that are linearized before the $READ$ invocation, and at least $val$ $INC$ operations that are linearized before the $READ$ response. In particular, there is a point along the $READ$ operation where there are exactly $val$ $INC$ operations that were linearized, and we linearize the $READ$ operation in such a point.
+
+\begin{varalgorithm}{Counter}
+
+	\caption{program for process $p$}
+	\label{alg:recoverable-counter}
+	
+	\hspace*{\algorithmicindent} \textbf{Shared variables:}
+	R[N]: an array, init $[0,\ldots,0]$
+
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]	
+		\Procedure{INC()}{}
+		\State $temp \gets R[p]$
+		\State $temp \gets temp+1$
+		\State $R[p].WRITE(temp)$
+		\State \Return $ack$
+		\EndProcedure
+		
+		\columnbreak
+		
+		\Procedure{READ()}{}
+		\State $val \gets 0$
+		\For {$i$ from 0 to $N$}
+			\State $val \gets val+R[i]$
+		\EndFor
+		\State $Res_p \gets val$
+		\State \Return $val$
+		\EndProcedure
+	\end{algorithmic}
+\end{multicols}
+\end{varalgorithm}
+
+In order to transform the implementation to a CRL form, we need to both translate the operations to a recoverable version, that is, a process needs to write the response value to $Res_p$ before returning, as well as supplied each operation with a \texttt{Recoverable} function. See Algorithm~\ref{alg:recoverable-counter} for the code.
+
+The $INC$ operation has a critical point, and this is the write to $R[p]$ which is also the linearization point. Therefore, we need to make sure $p$ writes only once along an $INC$ operation. For that, we replace the atomic write to $R[p]$ with a recoverable version. In case of a crash along the $INC$ operation, if the crash happens before invoking the recoverable $WRITE$, the \texttt{Recover} function of the $INC$ operation restart the operation. Otherwise, the \texttt{Recover} function of the recoverable $WRITE$ is invoked. For simplicity of presentation we omit the \texttt{Recover} function from the code.
+Notice that the recoverable WRITE requires no two identical values to be written. Although in general this can be achieved by appending any value with the process id and a private sequential number, in our case we can use the original values, as the specification of a COUNTER implies no two identical values are ever written to $R[p]$.
+As discussed in the beginning of the section, since $INC$ returns a trivial response there is no need to write the response value to $Res_p$.
+
+For the $READ$ operation, we first add an instruction $Res_p \gets val$ before the return instruction. The \texttt{Recover} function of the $READ$ simply restart the $READ$ operation in case there was a crash anywhere along the $READ$ operation.
+
+The above implementation is efficient in terms of the transformation to CRL form. It uses a single recoverable $WRITE$ operations, while the rest of the primitives are not replaced with a recoverable version. Also, the \texttt{Recover} functions are almost trivial - either restart or a \texttt{Recover} of the $WRITE$ operation. In terms of time and space complexity, the implementation is tight with both for the $INC$ and $READ$ operations, following Jayanti et. al lower bound \cite{DBLP:journals/siamcomp/JayantiTT00}.

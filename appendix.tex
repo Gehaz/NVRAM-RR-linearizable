@@ -1,53 +1,157 @@
 
-\section{Formal Proofs}
+\section{A Recoverable Test-and-Set Object}
+
+
+
+Algorithm \ref{alg:recoverable-TAS} presents a pseudo-code for process $p$ of a recoverable TAS object $T$. It supports strict recoverable \texttt{T\&S} operation.
+For simplicity we allow a process to return $true$ or $false$, representing $0$ and $1$ resp. We assume a process invoke \texttt{T\&S} operation at most once, as any additional operation returns 1.
+
+
+\begin{algorithm}%{Test-and-Set}
+	\caption{recoverable TAS object $T$, program for process $p$}
+	\label{alg:recoverable-TAS}
+	
+	\hspace*{\algorithmicindent} \textbf{Shared variables:}
+	\begin{itemize}[noitemsep,topsep=0pt]
+		\item R[N]: an array, init $[0,\ldots,0]$
+		\item Winner, Doorway: read/write registers, init $null$, $true$ resp.
+	\end{itemize}
+	
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]
+		\Procedure{\texttt{T\&S}()}{}
+		\State $R[p] \gets 1$ \label{tas:start}
+		\If {$Doorway = false$} \label{tas:check-doorway}
+			\State $ret \gets 1$ \label{tas:doorway-return-1}
+			\State proceed from line \ref{tas:return-code}
+		\EndIf
+		\State $R[p] \gets 2$ \label{tas:set-R[p]-2}
+		\State $Doorway \gets false$ \label{tas:close-doorway}
+		\State $ret \gets T.t\&s()$ \label{tas:tas-primitive}
+		\If {$ret = 0$}
+			\State $Winner \gets p$ \label{tas:write-to-winner}
+		\EndIf
+		\State $Res_p \gets ret$ \label{tas:return-code}
+		\State $R[p] \gets 3$ \label{tas:set-R[p]-3}
+		\State \Return $ret$
+		\EndProcedure
+		
+		\columnbreak
+		
+		\Procedure{\texttt{T\&S.RECOVER}()}{}
+		\If {$R[p] < 2$} \label{tas:rec:start}
+			\State proceed from line \ref{tas:start}
+		\EndIf
+	%	\If {$Doorway = true$}
+	%		\State proceed from line \ref{tas:close-doorway}
+	%	\EndIf
+		\If {$R[p] = 3$} \label{tas:rec:return-operation-done}
+			\State $ret \gets Res_p$
+			\State \Return $ret$
+		\EndIf
+		\If {$Winner \neq null$} \label{tas:rec:check-winner}
+			\State proceed from line \ref{tas:rec:return-code}
+		\EndIf
+		\State $Doorway \gets false$ \label{tas:rec:close-doorway}
+		\State $R[p] \gets 4$ \label{tas:rec:set-R[p]-4}
+		\State $T.t\&s()$ \label{tas:rec:tas-primitive}
+		\For {$i$ from $0$ to $p-1$} \label{tas:rec:wait-lower-id}
+			\State await($R[p] = 0$ or $R[p] = 3$)
+		\EndFor
+		\For {$i$ from $p+1$ to $N$} \label{tas:rec:wait-higher-id}
+			\State await($R[p] = 0$ or $R[p]>2$)
+		\EndFor
+		\If {$Winner = null$} \label{tas:rec:winner-not-overwrite}
+			\State $Winner \gets p$ \label{tas:rec:write-winner}
+		\EndIf
+		\State $ret \gets (Winner \neq p)$ \label{tas:rec:return-code}
+		\State $Res_p \gets ret$
+		\State $R[p] \gets 3$ \label{tas:rec:set-R[p]-3}
+		\State \Return $ret$
+		\EndProcedure
+	\end{algorithmic}
+\end{multicols}
+\end{algorithm}
+
+
+A doorway mechanism is used to guarantee once a process sets the doorway all operations invoke later returns 1. This implies a operation which returns 0 can be linearized before any other operation. The doorway can be replaced with reading $T$ in line \ref{tas:check-doorway}, in case of a TAS object which supports also a read operation.
+After passing the doorway, a process tries to win the TAS object in line \ref{tas:tas-primitive}, and the winning process declare itself by writing to a designated variable $Winner$. Once a process writes to $Winner$ any process can recover by simply read $Winner$. Hence, the main difficulty is to make sure a single process writes to $Winner$.
+
+A crash before line \ref{tas:set-R[p]-2} executes implies the operation did not affect any other process so far, and \texttt{T\&S.RECOVER} re-executes \texttt{T\&S}. A crash after setting $R[p] \gets 3$, in either line \ref{tas:set-R[p]-3} or \ref{tas:rec:set-R[p]-3} implies $p$ already computed its response and wrote it to $Res_p$. In such case, \texttt{T\&S.RECOVER} simply copy the response from $Res_p$ and return it. A crash after a process wrote to $Winner$ implies a winner declare itself, thus in \texttt{T\&S.RECOVER} $p$ check to see if it is the winner and answer accordingly.
+
+If none of the above cases holds, this means $p$ is still competing to win the TAS. Therefore, it closes the doorway in line \ref{tas:rec:close-doorway}, in case it is still open, and announce it is competing for the TAS in \texttt{T\&S.RECOVER} by writing 4 to $R[p]$ in line \ref{tas:rec:set-R[p]-4}. Following that, it has to pass two for loops in lines \ref{tas:rec:wait-lower-id} and \ref{tas:rec:wait-higher-id}. In the first one it waits for any running process with lower id to complete its operation. In the later, it waits for any running process with higher id to either complete or announce itself as recovering.
+The for loops grantee that if there is a process writing to $Winner$ in line \ref{tas:write-to-winner}, then $p$ must wait for it to do so. Also, only the smallest id process that is competing to win the TAS and crash can complete the two for loops and write to $Winner$ in line \ref{tas:rec:write-winner}, while the rest must wait for it to complete. This implies at most a single process writes to $Winner$, and eventually one must do so. As argued before, once a process writes to $Winner$, upon completing its operation it returns 0.
+
 
 
 \begin{claim}
-	There exists no CRL recoverable TAS implementation such that a process running without crashing is only allowed to use read, write and t\&s primitives, and both TAS and \texttt{Recover} are wait-free.
+	Algorithm \ref{alg:recoverable-TAS} satisfies CRL.
 \end{claim}
 
 \begin{proof}
-	Let $\mathcal{A}$ be a CRL recoverable TAS implementation such that a process running without crashing is only allowed to use read, write, and t\&s primitives. Assume towards a contradiction both TAS and \texttt{Recover} are wait-free.
-	Let $p$ and $q$ be two different processes. Notice that solving TAS for two processes is equivalent to consensus, the process who gets 0 as response is the winner. Thus, we use the same proof technique as in the FLP impossibility result \cite{DBLP:journals/jacm/FischerLP85}.
+
+First observe that $T$ is a recoverable object since each of its two operations has a corresponding \texttt{RECOVER} function. Consider an execution $\alpha$ of the algorithm and the corresponding history $H(\alpha)$. From Lemma \ref{all-histories-well-formed}, $H(\alpha)$ is recoverable well-formed. Hence, $H'(\alpha)=N(H(\alpha))$ is a well-formed (non-recoverable) history. Following definition \ref{Definition:CRL}, it is enough to prove that $H'(\alpha) | T$ is  linearizable.
+
+	The proof relies on the following simple observations:
+	\begin{enumerate} [noitemsep,topsep=0pt]
+		\item In any execution where there is a process completing its operation, there must be a write to $Doorway$.
+		\item Once a process writes to $Doorway$, any operation yet to execute line \ref{tas:start} returns 1 if given enough time with no crash. Moreover, such an operation can set $R[p]$ to either 1 or 3.
+		\item Once a process writes 3 to $R[p]$ (in line \ref{tas:set-R[p]-3} or \ref{tas:rec:set-R[p]-3}), its response is persistent in $Res_p$. In addition, $R[p]$ is fixed for the rest of the execution, and if $p$ given enough time with no crash it returns the value stored in $Res_p$.
+		\item A process which returns 0 must also write to $Winner$.
+		\item Assume a process $p$ writes to $Winner$, and it is the only process to do so. Then if given enough time with no crash $p$ eventually returns 0.
+	\end{enumerate}
 	
-	A configuration $C$ is 0-valent (1-valent) if there exists a crash-free extension where $p$ ($q$) returns 0. $C$ is bivalent if its both 0-valent and 1-valent, and univalent otherwise.
 	
-	We start with the initial configuration $C_0$ where both $p$ and $q$ invoke a $TAS$ operation. Then, $C_0$ is bivalent - a solo run of each process returns 0. Following the FLP proof and since the algorithm is wait-free, there is an extension of $C_0$ which leads to a bivalent configuration $C_1$ in which both $p$ and $q$ are about to perform a critical step. This step must be $t\&s$ primitive on the same shared variable. Moreover, a step by any of the processes leads to a different univalent configuration. Denote $C_1 p$ to be $v$-valent, and $C_1 q$ to be $\overline{v}$-valent.
 	
-	Let $p$ and then $q$ perform their next $t\&s$ step, followed by a crash step of $p$. Since the response of the $t\&s$ primitive can only be stored in the cache of $p$ which is lost due to the crash, upon recovery $p$ does not know whether the $t\&s$ primitive was performed, and what was the response value in case it did. More formally, $p$ can not distinguish between the configurations $C_1 \circ (p,q,CRASH_p)$ and $C_1 \circ (q, p, CRASH_p)$. Therefore, a recover of $p$ after any of these configuration follows by a solo run of $p$ must return the same value $ret$. Notice that the process must return value since we assumed the \texttt{Recover} function is wait-free. This implies both configurations are $u$-valent for some $u$, since in a solo run of $p$ followed by a solo run of $q$ one process returns 0.
+	If no \texttt{T\&S} operation completes in $\alpha$, then $H'$ is obviously linearizable. Thus, assume there is a complete \texttt{T\&S} operation, either normally or by completing a \texttt{T\&S.RECOVER} execution. Denote by $t$ the time of the first write to $Doorway$. There is no operation complete before time $t$, otherwise there is an earlier write to $Doorway$, in contradiction. Also, any operation yet to execute line \ref{tas:start} at time $t$ returns 1 (if it returns), and can set $R[p]$ to either 1 or 3.
+	%In addition, any operation is before executing line \ref{tas:write-to-winner} or \ref{tas:rec:write-winner} at time $t$ by definition. In particular, there is no operation that was completed before time $t$.
+
 	
-	WLOG assume $u=v$ (the other case is symmetric). Then we consider the configuration $C'_1 = C_1 \circ (q,p,CRASH_p)$. Note that $C'_1$ is indistinguishable from a configuration $C_1 \circ (q,p)$ for $q$, as it does not aware to $p$'s crash. Therefore, $C'_1$ is $\overline{v}$-valent and also $v$-valent, that is, $C'_1$ is bivalent. By our assumption, $q$ is only allowed to use read, write and t\&s primitives, thus we can repeat the same argument proving there is an extension of $C'_1$ leading to a bivalent configuration $C_2$ where both $p$ and $q$ are about to perform a critical step. Moreover, this step must be t\&s primitive on the same shared variable. A simple observation is that this t\&s object must be different then any other t\&s object that was used, since such an object always returns 1, contradicting the fact both next steps are critical.
+	The proof composed of two claims - there can be no two operations returning 0, and if the entire system is given enough time with no crash there must be such an operation. It follows that either there is a single operation pending at time $t$ which returns 0 in $\alpha$, or there is no such operation, but there is a pending operation at time $t$ that is yet to complete in $\alpha$. In both cases we can linearize one operation at time $t$ as returning 0, while the rest can be linearize after it, and they all return 1. This proves $H'$ is linearizable.
 	
-	The construction continues this way, generating longer and longer executions. We get that there exist executions in which $q$ does not crash, however it access more and more different t\&s objects. This contradict the fact the TAS operation is wait-free.
+	Following the observations it suffices to prove there can be no two processes writing to $Winner$.
+	Assume there is a process $p$ writing to $Winner$ in line \ref{tas:write-to-winner}. Then, no other process can write to $Winner$ in line \ref{tas:write-to-winner}, since T returns 0 exactly once.
+	Assume towards a contradiction there exists a process $q$ writing to $Winner$ in line \ref{tas:rec:write-winner}. Then, $q$ is before executing line \ref{tas:rec:set-R[p]-4} at time $t$ by definition. In order to write to $Winner$ it has to go through the for loops in the \texttt{T\&S.RECOVER} function, and thus have to wait for $p$ to set $R[p] > 2$ in any case. By the observations, at time $t$ $p$ is after executing line \ref{tas:start}. Also, $p$ can not set $R[p]$ to 4 in line \ref{tas:rec:set-R[p]-4}, as this implies $p$ crash after executing line \ref{tas:set-R[p]-2} and before writing to $Winner$, and in particular the recover function of $p$ does not re-execute any line of the \texttt{T\&S}, contradicting the fact that $p$ writes to $Winner$ in line \ref{tas:write-to-winner}. Therefore, it must be that $p$ sets $R[p] \gets 3$, and this happens only after it writes to $Winner$. As a result, $q$ gets to line \ref{tas:rec:winner-not-overwrite} only after $p$ writes to $Winner$, and therefore does not write to $Winner$ in line \ref{tas:rec:write-winner}, in contradiction.
+	
+	Assume now there is a process $p$ writing to $Winner$ in line \ref{tas:rec:write-winner}. As just proved, no process can write to $Winner$ in line \ref{tas:write-to-winner}. Assume towards a contradiction there exists another process $q$ which writes to $Winner$ in line \ref{tas:rec:write-winner}. Without loss of generality, assume $p < q$. At time $t$ both processes are after executing line \ref{tas:start} and before executing line \ref{tas:rec:wait-lower-id}. Hence, in order to get to line \ref{tas:rec:write-winner} $q$ has to wait for $p$ to set $R[p] \gets 3$, that is, to complete its operation. This happens only after $p$ writes to $Winner$, thus in line \ref{tas:rec:check-winner} $q$ observes a value different then $null$ and does not write to $Winner$, in contradiction.
+
+	We now prove that if the system is given enough time with no crash, then eventually some process writes to $Winner$. Assume towards a contradiction no process writes to $Winner$. If no operation crash after setting $R[p] \gets 2$ in line \ref{tas:set-R[p]-2}, then the first operation to execute line \ref{tas:tas-primitive} also writes to $Winner$, in contradiction. Thus, there must be such an operation, and it eventually executes \texttt{T\&S.RECOVER} and set $R[p] \gets 4$ in line \ref{tas:rec:set-R[p]-4}. A operation which does not execute line \ref{tas:rec:set-R[p]-4}, given enough time with no crash, eventually sets $R[p]$ to 3, and returns. As a result, after enough time with no crash of the system, and operation either completes, or after executing line \ref{tas:rec:set-R[p]-4}, and at least one operation satisfies the later. Let $p$ be the process with the smallest id satisfying the formar. Then, for any $i < p$ we have $R[i] \in \{0,3\}$, and for any $i > p$ we have $R[i] \in \{0,3,4\}$. Therefore, eventually $p$ complete the for loops in \texttt{T\&S.RECOVER}, and writes to $Winner$ in line \ref{tas:rec:write-winner}, in contradiction.
+	
 \end{proof}
 
+\section{Proofs Omitted for Lack of Space}
+\begin{lemma-repeat}{lemma:CAS-alg-is-CRL}
+\end{lemma-repeat}
 
+\begin{proof}
 
+First observe that $C$ is a recoverable object since each of its two operations has a corresponding \texttt{RECOVER} function. Consider an execution $\alpha$ of the algorithm and the corresponding history $H(\alpha)$. From Lemma \ref{all-histories-well-formed}, $H(\alpha)$ is recoverable well-formed. Hence, $H'(\alpha)=N(H(\alpha))$ is a well-formed (non-recoverable) history. Following definition \ref{Definition:CRL}, it is enough to prove that $H'(\alpha) | C$ is  linearizable.
+Since none of the recovery functions writes to a variable read by other processes, they have no effect on their executions. We can therefore ignore crashes that occur during the execution of the recovery function.
+	
+For presentation simplicity, when we refer to \emph{the value of} $C$ we refer the value of its second field, which represents the state of the object, and when refer to \emph{the content of }$C$, we refer to both fields as a pair. Since no process writes the same value twice, it follows that the content of $C$ is unique, while the values of $C$ are not necessarily unique, since different processes may write the same value.
+	
+	Assume $p$ applies a $\texttt{CAS}(old,new)$ operation to $C$ in $\alpha$. First assume $p$ does not crash during the \texttt{CAS} operation.
+	In line \ref{cas:start}, $p$ reads $C$ and then compares the value of $C$ to $old$. If the values differ, then the operation is linearized at the read in line \ref{cas:start} and indeed at this point the value of $C$ is different from $old$, so $p$ returns $false$ in line \ref{cas:return-false}.
+	Otherwise, $p$ informs the last process $q$ to have performed a successful \texttt{CAS} that its operation took effect. It does so by writing to $R[q][p]$ the value it read from $C$. A two dimensional array $R$ of SRSW registers is used for this purpose. Following that, $p$ tries to change the value of $C$ by performing $CAS$ in line \ref{cas:primitive-apply}. %Notice that $p$'s id is added, as the CAS content is composed of two fields.
+	
+	There are two scenarios to consider.
+	Assume first that there is a successful \texttt{CAS} is applied to $C$ between $p$'s execution of line \ref{cas:start} and line \ref{cas:primitive-apply}. In this case, the first such operation must change $C$'s value to a value other than $old$, and we can linearize $p$'s operation right after it. Since the content of $C$ is unique, $p$'s $CAS$ in line \ref{cas:primitive-apply} fails, and it returns $false$ in line \ref{cas:operation-return}. Otherwise, there was no successful \texttt{CAS} to $C$ between the read in line \ref{cas:start} and the $CAS$ in line \ref{cas:primitive-apply}, and thus the $CAS$ in line \ref{cas:primitive-apply} is successful, and this is also the linearization point and $p$ returns $true$ in line \ref{cas:operation-return}.
+	
+Assume now that $p$ crashes during a \texttt{CAS} operation.
+	If $p$ did not write to $C$, either because the crash occurs before line \ref{cas:primitive-apply}, or due to a failed $CAS$ operation in line \ref{cas:primitive-apply}, then ${<}p,new{>}$ is not written to $C$. This follows from the fact that $p$ writes distinct values, thus \emph{new} was not written by $p$ before. As processes writes to $R$ only values read from $C$, no process writes \emph{new} to $R[p][*]$. As a result, \texttt{CAS.RECOVER} re-executes \texttt{CAS}. A failed CAS operation does not affect other processes, that is, removing the operation is indistinguishable to other processes. Therefore, in both cases, considering the operation as not having a linearization point so far and re-executing it does not violate the sequential specification of CAS.
+	
+	If $p$ did perform a successful \texttt{CAS} in line \ref{cas:primitive-apply} before the crash, then this is also the operation's linearization point. We argue that the next process $q$ to perform a successful \texttt{CAS} on $C$, if any, must write $new$ to $R[p][q]$ before its \texttt{CAS} takes effect. Assume there exists such a process $q$. Then, consider the time when the successful \texttt{CAS} of $q$ in line \ref{cas:primitive-apply} occurs. It must be that $q$ executes line \ref{cas:start} to line \ref{cas:primitive-apply} without crashing, since any crash before writing to $C$ will cause the re-execution of the \texttt{CAS} operation, as we have already shown. In addition, $q$ reads ${<}p,new{>}$ from $C$ in line \ref{cas:start}, since by our assumption it succeeds in replacing $p$'s value, that is, it performed a successful $CAS$ when $C$'s content was ${<}p,new{>}$. As the content of $C$ is unique, reading any other content implies the $CAS$ in line \ref{cas:primitive-apply} fails, a contradiction. Hence, before $q$'s successful \texttt{CAS} in line \ref{cas:primitive-apply}, it writes \emph{new} to $R[p][q]$ in line \ref{cas:write-C-value}.
+	We assume that the reads in line \ref{cas:recover-read-vars} of \texttt{CAS.RECOVER} are done from left to right. As a result, in line \ref{cas:recover-read-vars}, $p$ either reads $C={<}p,new{>}$ or, otherwise, another process already replaced $C$'s content but wrote $new$ to $R[p][*]$ before that, thus $p$ observes $new$ in $R[p][*]$. In both cases, $p$ considers the \texttt{CAS} operation as successful and returns true in line \ref{cas:recover-returns-true}.
+	
+	 As for \texttt{READ}, if and when it returns (in lines \ref{cas:read-return} or \ref{cas:read-recover-return}), it is linearized when it last read $C$ (in line \ref{cas:read-start} or line \ref{cas:read-recover-start}, resp.)
+	
+
+\end{proof}
 
 \begin{claim}
-	The recoverable TAS implementation given in Algorithm~\ref{alg:recoverable-TAS} is CRL.
+The \textit{Counter} algorithm described in Section \ref{section: Recoverable Base Objects} is linearizable.
 \end{claim}
 
 \begin{proof}
-	We first notice the t\&s operation is wait free, and has a constant time complexity. Also, the implementation is recoverable - a process writes the response value to $Res_p$ before returning, and any operation is equipped with a \texttt{Recover} function. Consider some execution $\alpha$. We assume whenever a process crash, once it recovers the system triggers the appropriate \texttt{Recover} function if there is a pending operation. Therefore, the corresponding history $H$ describing the execution $\alpha$ is recoverable well-formed, and after removing all crash and recover steps we get a well formed history $H'$. Following definition \ref{Definition: RR-linearizability}, it is enough to prove $H'$ is also linearizable.
-	
-	If no $t\&s$ operation was completed in $\alpha$, then $H'$ is obviously linearizable. Thus, assume there is a complete $t\&s$ operation, either by completing the $t\&s$ code, or the \texttt{Recover} function. Denote by $t$ the time of the first write to $Doorway$. There must be such a write since we assumed there is a complete operation. Notice that any process who invoke a $t\&s$ operation after $t$ will return 1 in line 4 - even in case of a crash the \texttt{Recover} function restarts the operation, thus if given enough time with no crash eventually it will read 1 from $Doorway$ in line 2 and return 1. In addition, there is no operation which returns before $t$, otherwise there is a process writing to $Doorway$ before $t$, in contradiction.
-	
-	The proof is composed of two claims - there can be no two operations returning 0, and if all pending operations at time $t$ are completed at least one returns 0. It follows that either there is a single operation active at time $t$ which returns 0 in $\alpha$, or there is no such operation, but there is an active operation at time $t$ that is yet to complete in $\alpha$. In both cases we can linearize one operation at time $t$ as returning 0, while the rest can be linearize after it, and they all return 1. This proves $H'$ is linearizable.
-	
-	Following the code, a process returning 0 implies it wrote to $Winner$ its id. Thus, we prove there can be no two processes writing to $Winner$.
-	Assume there is a process $p$ writing to $Winner$ at the $t\&s$ code. Hence, $p$ was the first to performs $t\&s$ on $T$ (as it gets a response of 0). Any other $t\&s$ on $T$ returns 1, thus there can be no additional process writing to $Winner$ in line 9.
-	Assume there is a process $q$ writing to $winner$ in the \texttt{Recover} function. Then, $q$ must be the first to perform the $cas$ operation in line 22. Any other process who reads $C$ in line 23 gets the value $q$, thus it will skip to line \ref{return code}, and does not write to $Winner$. Thus, only $q$ can write to $Winner$ in \texttt{Recover} function.
-	
-	Assume towards a contradiction both $p$ and $q$ writes to $Winner$. Then, $p$ is the first to perform a $t\&s$ on $T$ in line 7.
-	Notice that $p$ can not crash before the write to $Winner$, otherwise the \texttt{Recover} function does not restart the operation, in contradiction to $p$ writing to $Winner$ in the $t\&s$ code. We get that $p$ writes $R[p] \gets 2$ (either in the $t\&s$ code, or in the \texttt{Recover} function) only after it writes to $Winner$.
-	In addition, $q$ is before line 17 at the time of $p$ performing the $t\&s$ on $T$, and in particular before the for loop in the \texttt{Recover} function. In order to complete the for loop, $q$ must wait for $p$ to set $R[p] \neq 1$. This in turns happens only after $p$ writes to $Winner$. As a result, whenever $q$ gets to line 28 only after $Winner = p$, hence it does not write to $Winner$ in line 29, in contradiction. Therefore, only one of then can write to $Winner$, and the claim follows.
-	
-
-	We now prove there is a process returning 0 if all pending operations at time $t$ have been completed. In fact, we prove in such case there is a process $q$ writing to $Winner$. Since $q$ is the only process to write to $Winner$ and it complete its operation, it must return 0, either in the $t\&s$ code or at the \texttt{Recover} function.
-	First notice that any process who sets $R[p] \gets 1$ is active at time $t$, thus the operation is complete in $\alpha$. Also, there exist such a process, the process who writes to $Doorway$ for example.
-	
-	Assume toward a contradiction no process writes to $Winner$. If no process crash after setting $R[p] = 1$ then the first process to perform the $t\&s$ on $T$ in line 7, also complete its operation and writes to $Winner$ in line 9, in contradiction. Thus, there exists a process who crash and complete the \texttt{Recover} function after setting $R[p] \gets 1$. By our assumption $Winner = null$, hence the if in line 19 returns false. Let $q$ be the first process to perform the $cas$ operation in line 22. $q$ sets the value of $C$ to be $q$, and this does not change along the execution (any other $cas$ fails). We get that starting from this point $R[q] = 2$, $Winner = null$ and $C = q$. Hence, even if $q$ crash and restart the \texttt{Recover} function many times, eventually it complete its operation, thus it does not use any of the go to instructions, and after completing the for loop it reads $null$ from $Winner$. Therefore, in line 29 $q$ writes to $Winner$, in contradiction.
-	
-
-\end{proof}
+The correctness argument is as follows. Assume process $p$ completes a \texttt{READ} operation. Let $v$ be the value it read from $R[q]$. Since $R[q]$ is monotonically increasing, it must be that $R[q] \leq v$ immediately after the \texttt{READ}'s invocation and $R[q] \geq v$ immediately before the \texttt{READ}'s response. Therefore, at most $v$ \texttt{INC} operations by $q$ have been linearized before the \texttt{READ}'s invocation, and at least $v$ \texttt{INC} operations were linearized before the \texttt{READ}'s response. As this is true for any $q$, it implies that, as $p$ computes value $val$, then there are at most $val$ \texttt{INC} operations that were linearized before its \texttt{READ} invocation, and at least $val$ \texttt{INC} operations that were linearized before its \texttt{READ} response. In particular, there is a point during \texttt{READ}'s execution when exactly $val$ \texttt{INC} operations were linearized, so we linearize the \texttt{READ} operation at such a point.
+\end{proof} 

@@ -1,0 +1,264 @@
+
+\section{Recoverable Base Objects}
+\label{section: Recoverable Base Objects}
+
+In this section, we present algorithms for recoverable base objects that support primitive operations such as read, write, compare-and-swap (CAS) and test-and-set. As described in Section \ref{section: Model}, this consists of implementing a recovery function $Op.\texttt{Recover}$ for each such operation, which is invoked by the system upon a crash-failure when $Op$ is the crashed operation.
+
+In the pseudo-code, we use names that start with a capital letter for shared-memory variables and lower-case names for local variables. We also use capital-letter names for implemented operations and lower-case names for the base operations used by them. \emph{All the shared-memory variables used by our algorithms are non-volatile}.
+
+In this paper, we only consider recoverable objects or base objects provided by the system that support atomic read, write or read-modify-write (RMW) operations. Before presenting our algorithms we prove that, under these assumptions, our model guarantees that all histories are recoverable well-formed.
+
+\begin{lemma}
+\label{all-histories-well-formed}
+Let $H$ be a history in which all operations are applied to either recoverable objects or atomic base objects. Then $H$ is recoverable well-formed.
+\end{lemma}
+\begin{proof}
+Consider an execution $\alpha$ of any algorithm and the corresponding history $H(\alpha)$. 
+If an atomic read, write or RMW is executed in $\alpha$, then its invocation and response steps appear in $H$ consecutively hence cannot violate well-formedness, so it suffices to consider invocation/response steps on recoverable objects and crash/recovery steps.
+
+When a process $p$ invokes an operation $Op$ on a recoverable object $O$, a corresponding invocation step $i$ is appended to $H(\alpha)$. If $p$ crash-fails inside $Op$, a $(CRASH, p)$ step $c$ is appended to $H(\alpha)$ and its crashed operation is $Op$. The system eventually resurrects $p$ and invokes \texttt{Op.RECOVER}, thus a recovery step $r$ that matches $c$ is appended to $H(\alpha)$ . If $p$ undergoes additional failures before $Op$ completes, then additional pairs of a crash step and its matching recovery step are appended to $H(\alpha)$. Otherwise, if and when $Op$ completes, a response step $r$ that matches $i$ is appended to $H(\alpha)$. It follows from Definition \ref{def:recoverable-well-formedness} that $H(\alpha)$ is a recoverable well-formed history.
+\end{proof}
+
+
+\paragraph*{A Recoverable Read-Write Object}
+
+Our recoverable read-write object algorithm assumes that all values written to the object are distinct. This assumption can be easily satisfied by augmenting each written value with a tuple consisting of the writing process' ID and a per-process sequence number. In some cases, such as the example of a recoverable counter that we provide later, this assumption is satisfied due to object semantics and does not require special treatment.
+
+Algorithm \ref{alg:recoverable-write} presents pseudo-code for process $p$ of a recoverable read-write object $R$. It supports non-strict (see Definition \ref{def:strict-recoverable-op}) recoverable \texttt{READ} and \texttt{WRITE} operations. Both the \texttt{READ} and \texttt{READ.RECOVER} simply return $R$'s current value (lines \ref{read-first}-\ref{read-return}, \ref{read-recover-start}-\ref{read-recover-last}.
+
+Our implementation of the write operation ``wraps'' the write primitive with code that allows the recovery function \texttt{WRITE.RECOVER} to conclude whether $p$'s write in line \ref{write-to-R}, or a write by a different process, took place since $p$'s invocation of \texttt{WRITE}. This is done using a single-reader-single-write shared-memory variable $S_p$ that stores a pair of values -- $R$'s previous value (read in line \ref{write-start}) and a flag that allows the recovery function  to infer the location in \texttt{WRITE} where the failure occurred. Specifically, $flag=0$ holds whenever $p$ is either not performing a \texttt{WRITE} operation on $R$ (since it is initialised to $0$) or $p$ has performed line \ref{write-second} but \texttt{WRITE} was not yet completed.
+
+\begin{algorithm}
+	\caption{recoverable read/write object $R$, program for process $p$}
+	\label{alg:recoverable-write}
+	
+	\hspace*{\algorithmicindent} \textbf{Shared variables:}
+	$S_p$ - pair of values, init $<0,null>$
+	
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]	
+		\Procedure{\texttt{WRITE}(val)}{}
+		\State $temp \gets R$ \label{write-start}
+		\State $S_p \gets <1,temp>$ \label{write-first}
+		\State $R \gets val$ \label{write-to-R}
+		\State $S_p \gets <0,val>$ \label{write-second}
+		\State \Return $ack$
+		\EndProcedure
+
+		\Procedure{\texttt{READ}()}{} \label{read-first}
+        \State $temp \gets R$ \label{read-read-R}
+        \State \Return $temp$ \label{read-return}
+		\EndProcedure
+
+		
+		\columnbreak
+		
+		\Procedure{\texttt{WRITE}.\texttt{RECOVER}(val)}{}
+		\State $<flag, curr> \gets S_p$ \label{write-recover:read-Sp}
+		\If {$flag = 0 \land curr \neq val$} \label{write-recover:if-did-not-start}
+			\State proceed from line \ref{write-start} \label{write-recover:reexecute1}
+		\ElsIf {$flag = 1 \land curr = R$} \label{write-recover:read-R}
+			\State proceed from line \ref{write-start}
+		\EndIf
+		\State $S_p \gets <0,val>$ \label{write-recover:update-Sp}
+		\State \Return $ack$ \label{write-recover:return-ack}
+		\EndProcedure
+
+		\Procedure{\texttt{READ.RECOVER}() \label{read-recover-start}}{}
+        \State $temp \gets R$ \label{read-recover-read-R}
+        \State \Return $temp$ \label{read-recover-return}
+		\EndProcedure \label{read-recover-last}
+	\end{algorithmic}
+\end{multicols}
+\end{algorithm}
+
+
+
+The intuition for correctness is the following. A crash before line \ref{write-first} executes implies that both $S_p = {<}0,curr{>}$ and $curr \neq val$ hold, since we assume each value written to $R$ is distinct. In this case, \texttt{WRITE.RECOVER} simply re-executes \texttt{WRITE} (lines \ref{write-recover:if-did-not-start}-\ref{write-recover:reexecute1}). A failure after line \ref{write-second} executes implies that $S_p=<0,val>$ holds, in which case \texttt{WRITE.RECOVER} returns $ack$. Otherwise neither of the conditions of lines \ref{write-recover:if-did-not-start},\ref{write-recover:read-R} holds, hence either $p$ already executed line \ref{write-to-R}, or another process wrote to $R$ between when $R$ was read by $p$ in \texttt{WRITE} (line \ref{write-start}) and in \texttt{WRITE.RECOVER} (line \ref{write-recover:read-R}). In either of these cases, we may linearize \texttt{WRITE}, so the recovery function updates $S_p$ and returns \emph{ack} (lines \ref{write-recover:update-Sp}-\ref{write-recover:return-ack}). A formal correctness proof follows.
+
+%A failure in between implies that $R_p=<1,curr>$ holds, for $curr \neq val$. Here there are two cases to consider. If there was a write to $R$ (by another process) between when $R$ was read by $p$ in \texttt{WRITE} (line \ref{write-start}) and in \texttt{WRITE.RECOVER} (line \ref{write-recover:read-R}), then either $p$ executed line \ref{write-to-R} and \texttt{WRITE} can be linearized at that point, or a write by another process occurred in between, hence we can linearize $p$'s \texttt{WRITE} immediately before it regardless of whether $p$ executed line \ref{write-recover:read-R} or not. In any case, we get $curr \neq R$, and the \texttt{Recover} function consider the operation as done.
+
+\begin{lemma}
+	Algorithm~\ref{alg:recoverable-write} satisfies CRL.
+\end{lemma}
+
+\begin{proof}
+%First notice that Algorithm~\ref{alg:recoverable-write} is wait-free and has a constant time complexity for both the WRITE and the \texttt{Recover}.
+First observe that $R$ is a recoverable object since each of its two operations has a corresponding \texttt{RECOVER} function. Consider an execution $\alpha$ of the algorithm and the corresponding history $H(\alpha)$. From Lemma \ref{all-histories-well-formed}, $H(\alpha)$ is recoverable well-formed. Hence, $H'(\alpha)=N(H(\alpha))$ is a well-formed (non-recoverable) history. Following definition \ref{Definition:CRL}, it is enough to prove that $H'(\alpha) | R$ is  linearizable.
+	
+Since both $R$'s recovery functions do not write to variables read by other processes, they have no effect on their execution. We can therefore ignore crashes that occur during the execution of the recovery functions, as long as $S_p$ is not written (which only occurs in line \ref{write-recover:update-Sp} of \texttt{WRITE.RECOVER}).
+
+Assume $p$ applies a $\texttt{WRITE}(val)$ operation to $R$ in $\alpha$. If $p$ does not fail during its execution, then clearly $p$ writes to $R$ exactly once in line \ref{write-to-R} and this the operation's linearization point. Otherwise, assume that $p$ fails when executing the \texttt{WRITE} operation. A crash before line \ref{write-first} implies that $p$ did not yet write to neither $S_p$ nor $R$, hence \texttt{WRITE} was not linearized yet. Upon recovery, $p$ reads $S_p=<0,curr>$, where $curr \neq val$ holds, since we assume all written values are distinct. Hence, the \texttt{WRITE.RECOVER} re-executes \texttt{WRITE}.
+
+A crash between the two writes to $S_p$ (in lines \ref{write-first} and \ref{write-second}) implies that $S_p={<}1,curr{>}$ and $curr \neq val$ holds. Upon recovery, if the condition of line \ref{write-recover:read-R} is satisfied, then $curr = R$ ensures that no process wrote to $R$ between the two reads of $R$ (in lines \ref{write-start} and \ref{write-recover:read-R}). In particular, $p$ did not write to $R$ (so \texttt{WRITE} was not linearized) and the operation is re-executed.
+
+Otherwise $curr \neq R$, i.e., there was a write to $R$ between the two reads of $R$ by $p$. If $p$ wrote to $R$ in line \ref{write-to-R}, then the operation was already linearized at this point. Else, there was a write by a different process $q$ that occurred between the two reads by $p$, hence within the execution interval of $p$'s $\texttt{WRITE}$. Thus, $p$'s $\texttt{WRITE}$ can be linearized immediately before $q$'s, causing $q$ to immediately overwrite $val$ (if it was indeed written by $p$ in line \ref{write-to-R}), resulting in an execution that is indistinguishable to all processes from one in which $p$ does not write to $R$ at all. It follows that, in both these cases, $p$'s $\texttt{WRITE}$ operation is linearized correctly also in this case and \texttt{WRITE.RECOVER} returns $ack$.
+
+The last case to consider is when $\texttt{WRITE.RECOVER}$ reads ${<}0,val{>}$ in line \ref{write-recover:read-Sp} and then performs lines \ref{write-recover:update-Sp}-\ref{write-recover:return-ack} and returns. This can occur either if $p$ crashed after executing line \ref{write-second}, or if it crashed before line \ref{write-second} but a subsequent  \texttt{WRITE.RECOVER} failed after updating $S_p$ (in line \ref{write-recover:update-Sp}). The latter case can happen only if a previous invocation of \texttt{WRITE.RECOVER} by $p$ read $S_p=<1,curr>$, for $curr \neq R$, executed line \ref{write-recover:update-Sp} and then failed. Our previous analysis established that \texttt{WRITE} can be linearized also in this case. This concludes our discussion of linearization points of \texttt{WRITE} operations. As for \texttt{READ}, if and when it returns (in lines \ref{read-return} or \ref{read-recover-return}), it is linearized when it last read $R$ (in line \ref{read-read-R} or line \ref{read-recover-read-R}, resp.).
+\end{proof}
+
+
+\paragraph*{A Recoverable Compare-and-Swap Object}
+
+A Compare-and-Swap (CAS) object supports the $\texttt{CAS}(old,new)$ operation, which atomically swaps the object's value to $new$ only if the value it stores is $old$. The operation returns true and we say it is \emph{successful} if the swap is performed, otherwise it returns false and we say it \emph{fails}. A CAS object also supports a \texttt{READ} operation which returns the object's value. Algorithm \ref{alg:recoverable-CAS} presents  pseudo-code for process $p$ of a recoverable CAS object $C$. It supports recoverable \texttt{CAS} and \texttt{READ} operation. Both \texttt{READ} and \texttt{READ.RECOVER} simply return $C$'s current value.
+
+$C$ stores two fields, both initially $null$. The first is the ID of the last process that performed a successful \texttt{CAS} and the second is the value it wrote. Inside the \texttt{CAS} operation, process $p$ first reads $C$. If the value read was written by process $q$, then $p$ stores it in $R[q,p]$ which is a SRSW shared variable used by $p$ to inform $q$. This allows processes to inform each other which \texttt{CAS} operations were successful. We assume that \texttt{CAS} is never invoked with $old=new$ and that values written to $C$ by the same process are distinct. This assumption can be easily satisfied by augmenting each written value with a per-process sequence number.
+
+\begin{algorithm}%{Compare-and-Swap}
+	\caption{recoverable CAS object C, program for process $p$}
+	\label{alg:recoverable-CAS}
+	
+	\hspace*{\algorithmicindent} \textbf{Shared variables:}
+	R[N][N] - all elements init $null$
+
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]
+		\Procedure{\texttt{CAS}(old,new)}{}
+		\State ${<}id,val{>} \gets C.read()$ \label{cas:start}
+		\If {$val \neq old$} \label{cas:if-compare-read}
+%		\State $Res_p \gets false$
+		\State \Return $false$ \label{cas:return-false}
+		\EndIf
+		\If {$id \neq null$}
+  		\State $R[id][p] \gets val$ \label{cas:write-C-value}
+		\EndIf
+		\State $ret \gets C.cas({<}id,va{l}>, {<}p,new{>})$ \label{cas:primitive-apply}
+%		\State $Res_p \gets ret$
+		\State \Return $ret$ \label{cas:operation-return}
+		\EndProcedure
+		
+		\Procedure{\texttt{READ}()}{}
+		\State ${<}id,val{>} \gets C$ \label{cas:read-start}
+		\State \Return $val$ \label{cas:read-return}
+		\EndProcedure
+		
+		\columnbreak
+		
+		\Procedure{\texttt{CAS.RECOVER}(old, new)}{}
+%		\State Read C, R[p][$*$] \label{cas:recover-read-vars}
+%		\If {$C={<}p,new{>}$, or $new$ appears in R[p][$*$]}
+		\If {$new \in \{C.second, R[p][1],\ldots,R[p][n]\}$ \label{cas:recover-read-vars}}
+%		\State $Res_p \gets true$
+		\State \Return $true$ \label{cas:recover-returns-true}
+		\Else {}
+		\State proceed from line \ref{cas:start} \label{cas:recover-re-execute}
+		\EndIf
+		\EndProcedure
+		
+		\Procedure{\texttt{READ.RECOVER}()}{}
+		\State ${<}id,val{>} \gets C$ \label{cas:read-recover-start}
+		\State \Return $val$ \label{cas:read-recover-return}
+		\EndProcedure
+	\end{algorithmic}
+\end{multicols}
+\end{algorithm}
+
+The intuition for correctness is the following.
+A process $p$ first reads $C$. If it reads a value $v$ other than $old$ it returns \emph{false} and is linearized at the read. Otherwise, if $v \neq {null}$, $p$ informs the process (say, $q$) that wrote $v$ that its CAS took effect by setting to $R[q][p] \gets v$.
+%This way, if $p$ fails after a successful \texttt{CAS} operation, the next process to change $C$'s value, if any, will inform $p$ that its \texttt{CAS} was successful. 
+This mechanism guarantees that, upon recovery $p$ is able to determine that its \texttt{CAS} operation took effect if the value it wrote is still stored in $C$ or is written in $R[p][j]$, for some $j$.
+
+If $p$ crash-fails inside \texttt{CAS} without modifying $C$, either because it crashes before line \ref{cas:primitive-apply} or because its $CAS$ in line \ref{cas:primitive-apply} failed, then ${<}p,new{>}$ is never written to $C$ or to any of $R[p][*]$. In this case, \texttt{CAS.RECOVER} simply re-executes  \texttt{CAS}. A key point in the correctness argument is that a \texttt{CAS} operation that crashed after a failed CAS can be re-executed, since it did not affect other processes, hence we may assume it was not linearized yet and re-execute it without violating the sequential specification of CAS.
+
+The proof of the following lemma is deferred to the appendix for lack of space.
+
+\begin{lemma}
+\label{lemma:CAS-alg-is-CRL}
+	Algorithm \ref{alg:recoverable-CAS} satisfies CRL.
+\end{lemma}
+
+
+\paragraph*{A Recoverable Test-and-Set Object}
+
+A non-resettable Test-and-Set (TAS) object is initialized to 0 and supports the $\texttt{T\&S}$ operation. It atomically writes 1 and returns the previous value. In the appendix, we present a recoverable non-resettable test-and-set algorithm that uses (non-recoverable) non-resettable TAS objects and read/write shared variables. In this section, we present an impossibility result on such implementations of recoverable TAS algorithms. We say that an operation (or a recovery function) is \emph{wait-free}, if a process that does not incur failures during its execution completes it in a finite number of its own steps. Our implementation of TAS has a wait-free $\texttt{T\&S}$ operation but its recovery code is blocking. The following lemma proves that this is inevitable: any recoverable TAS object from these primitives cannot have both a wait-free $\texttt{T\&S}$ operation and a wait-free $\texttt{T\&S.RECOVER}$ function.
+
+\begin{lemma}
+	There exists no recoverable non-resettable TAS algorithm satisfying CRL, from read, write and (non-recoverable) non-resettable TAS base objects only, such that both the \texttt{T\&S} operation and the \texttt{T\&S.RECOVER} function are wait-free.
+\end{lemma}
+
+\begin{proof}
+	We prove the lemma using valency arguments \cite{DBLP:journals/jacm/FischerLP85}. Let $\mathcal{A}$ be a CRL recoverable non-resettable TAS implementation using the base objects assumed by the lemma, and assume towards a contradiction that both \texttt{T\&S} and \texttt{T\&S.RECOVER} are wait-free. We say that a configuration $C$ is p-valent (resp. q-valent) if there exists a crash-free execution starting from $C$ in which $p$ (resp. $q$) returns 0 or has already returned $0$. $C$ is bivalent if it is both p-valent and q-valent, and univalent otherwise. Observe that any configuration $C$ is either p-valent or q-valent, because in a solo exeuction of $p$ followed by a solo run of $q$ from $C$ where both complete their operations (if they haven't done so already), exactly one must return (or already returned) 0.
+	
+	The initial configuration $C_0$, in which both $p$ and $q$ invoke the $TAS$ operation, is bivalent -- a solo run of each process returns 0. Using valency arguments and as we assume that \texttt{T\&S} is wait-free, there is an execution starting from $C_0$ that leads to a bivalent configuration $C_1$, in which both $p$ and $q$ are about to perform a critical step. This step must be an application of the $t\&s$ primitive to the same base object. Moreover, a step by any of the processes leads to a different univalent configuration. Assume WLOG that configuration $C_1 \circ p$ is $p$-valent whereas $C_1 \circ q$ is $q$-valent.
+	
+	Let $p$ and then $q$ perform their next $t\&s$ steps, followed by a crash step of $p$. Since $p$'s response from the $t\&s$ primitive is lost due to the crash, upon recovery $p$ does not know whether the $t\&s$ primitive was performed, and if it was, what the response value was. Specifically, configurations $C_1 \circ p \circ q \circ CRASH_p$ and $C_1 \circ q \circ p \circ CRASH_p$ are indistinguishable to $p$. Consequently, an execution of \texttt{T\&S.RECOVER} by $p$ after both configurations (which will complete since we assume that \texttt{T\&S.RECOVER} is wait-free) returns the same value $ret$. This implies that both configurations are $u$-valent for some $u$.
+	
+	WLOG assume $u=p$ (the other case is symmetric), then we consider configuration $C'_1=C_1 \circ q \circ p \circ CRASH_p$. Note that $C'_1$ is indistinguishable from configuration $C_1 \circ q \circ p$ for $q$, since $q$ is not aware of $p$'s crash. Therefore, $C'_1$ is both $q$-valent and $p$-valent, that is, it is bivalent. Since we assume that both processes are only allowed to use read, write and t\&s primitives, we can repeat the same argument again and show that there is an extension of $C'_1$ leading to a bivalent configuration $C_2$, where both $p$ and $q$ are about to perform a critical step. Moreover, this step must be the application of a t\&s primitive to the same base object. This must be a TAS base object other than those previously used in the execution, since those would always return 1, contradicting criticality.
+	
+Continuing in this manner, we construct a crash-free execution of $q$ in which it executes an infinite number of steps while performing a single \texttt{T\&S} operation. This is a contradiction.
+\end{proof}
+
+
+
+
+\paragraph*{Using Recoverable Base Objects}
+
+%Following the formal definition of RR-linearizability, a process needs to write the value it reads to $Res_p$ in order to implement a recoverable read. However, such an implementation is redundant and inefficient. In case a process crash before completing its read operation it can simply reissue it upon recovery.
+%In general, operations that only read the status of an object and does not change it (more formally, operation that can be commute with any other operation by a different process), usually uses only read primitive (e.g., snapshot), or at least are implemented in a way such that if a process crash in the middle of an operation then reissue it does not affect the rest of the processes. In such cases, one can implement a recoverable version of the operation by having the \texttt{Recover} function restarting the operation.
+
+
+
+%The implementation uses a single array $R$ of size $N$, the number of processes in the system. Each process $p$ has its own entry $R[p]$. For $INC$, a process $p$ simply adds 1 to the value in $R[p]$ by reading and then writing the updated value. The write is also the linearization point of the operation. For $READ$, process $p$ reads the entire array $R$ in a sequential manner, and sum up the values.
+
+A \textit{Counter} object supports an \texttt{INC} operation that atomically increments its value and a \texttt{READ} operation. We first describe a simple linearizable implementation of \textit{Counter} and then discuss the changes required for making it a recoverable \textit{Counter} satisfying CRL (see Algorithm~\ref{alg:recoverable-counter}). Each process $p$ has its own entry $R[p]$ in an array $R$, all of whose entries are initialized to 0. To perform \texttt{INC}, $p$ simply increments $R[p]$ (by reading $R[p]$ and then writing to it). In the \texttt{READ} operation, $p$ reads all array entries, sums up the values and returns the sum. The correctness argument for this algorithm is simple and provided in the appendix.
+
+\begin{algorithm}%{Counter}
+
+	\caption{recoverable Counter object, program for process $p$}
+	\label{alg:recoverable-counter}
+	
+	\hspace*{\algorithmicindent} \textbf{Shared variables:}
+	R[N]: a recoverable read/write array, init $[0,\ldots,0]$
+
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]	
+		\Procedure{\texttt{INC}()}{}
+		\State $temp \gets R[p]$ \label{count:inc-start}
+		\State $temp \gets temp+1$
+		\State $R[p].\texttt{WRITE}(temp)$ \label{count:inc-invoke-write}
+		\State \Return $ack$ \label{count:inc-return}
+		\EndProcedure
+		
+		\Procedure{\texttt{INC.RECOVER}()}{}
+		\If {$LPC <$ \ref{count:inc-invoke-write}}
+			\State proceed from line \ref{count:inc-start}
+		\Else{}
+			\State \Return $ack$
+		\EndIf
+		\EndProcedure
+		
+		\columnbreak
+		
+		\Procedure{\texttt{READ}()}{}
+		\State $val \gets 0$ \label{count:read-start}
+		\For {$i$ from 0 to $N$}
+			\State $val \gets val+R[i]$
+		\EndFor
+		\State $Res_p \gets val$
+		\State \Return $val$
+		\EndProcedure
+		
+		\Procedure{\texttt{READ.RECOVER}()}{}
+		\State proceed from line \ref{count:read-start}
+		\EndProcedure
+	\end{algorithmic}
+\end{multicols}
+\end{algorithm}
+
+Making this algorithm recoverable necessitated equipping both operations with a \texttt{RECOVER} function. Also, we would like the \texttt{READ} operation to be strict recoverable. This is accomplished in our implementation by having \texttt{READ} write its response value to a (non-volatile) shared-memory variable $Res_p$, used by $p$ only, immediately before it returns. This ensures that a recoverable operation that calls \texttt{READ} is able to access its response even if the process fails immediately after \texttt{READ} returns.
+The pseudo-code appears in Algorithm~\ref{alg:recoverable-counter}.
+
+The \texttt{INC} operation has a critical step, which is the write to $R[p]$, which is also its linearization point. Consequently, we must ensure that $R[p]$ is increment exactly once in an \texttt{INC} operation. We therefore use an array $R$ of recoverable read/write objects (such as those we implemented previously) instead of an array of (non-recoverable) read/write variables. If $p$ crashes inside \texttt{INC} before invoking the recoverable \texttt{WRITE} in line \ref{count:inc-invoke-write}, then \texttt{INC.RECOVER} is invoked by the system and re-executes \texttt{INC}. Otherwise, \texttt{WRITE.RECOVER} is invoked and, once it returns, \texttt{INC} returns in line \ref{count:inc-return} (unless it fails again).
+\color{blue} A crash after \texttt{WRITE} completes implies \texttt{INC.RECOVER} returns $ack$. The model assumes \texttt{INV.RECOVER} has an access to the last PC inside the \texttt{INC} code, where the crash took place, which is stored in LPC. So far, our implementations did not use this assumption. However, the \texttt{INC} requires a process to distinguish between a crash before and after \texttt{WRITE}, thus an access to LPC is needed. \color{black}
+Recall that our implementation of recoverable \texttt{WRITE} requires that distinct values will be written, but this imposes no overhead in this case since it is ensured by the algorithm. As for the \texttt{READ} operation, we first add an instruction $Res_p \gets val$ before returning. \texttt{READ.RECOVER} simply re-executes \texttt{READ} in case of a crash.
+
+
+
+For efficiency reasons, only \texttt{READ} is strict. The ability to re-execute \texttt{READ} in case of a crash, due to the fact it does not affect any other process, allows the use of primitives and not recoverable versions which have a lot of overhead. The only recoverable operation used is \texttt{WRITE} in line \ref{count:inc-invoke-write}. Algorithm \ref{alg:recoverable-counter} demonstrate how to use recoverable objects in order to implement a more complex recoverable object in an efficient manner. The possibility to nest recoverable operations allows the designer to assume any lower operation must complete before returning, even in the presence of crashes.
+
+%The above implementation is efficient in terms of the transformation to CRL form. It uses a single recoverable $WRITE$ operations, while the rest of the primitives are not replaced with a recoverable version. Also, the \texttt{Recover} functions are almost trivial - either restart or a \texttt{Recover} of the $WRITE$ operation. In terms of time and space complexity, the implementation is tight with both for the $INC$ and $READ$ operations, following Jayanti et. al lower bound \cite{DBLP:journals/siamcomp/JayantiTT00}.
+
+\color{blue}
+We assume a model in which the system has an access to the last program counter (PC) of the process upon recovery. Before invoking $Op.\texttt{Recover}$, the system updates a designated persistent variable with the last PC of the process, in case it is pointing the code of $Op$. This way, $Op.\texttt{Recover}$ can infer where in code the crash took place. This still leaves uncertainty regarding of whether the last instruction was executed.
+\color{black}
+

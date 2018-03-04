@@ -1,0 +1,73 @@
+\section{Related Work}
+\label{sec:related}
+
+%When an application implements a concurrent data structure,
+%it is necessary to specify its \emph{semantics}, namely,
+%the properties provided by values it returns,
+%which determine the feasibility and complexity of implementing it.
+Golab and Ramaraju~\cite{GolabR16} define an abstract individual-process crash-recovery model to study the \emph{recoverable mutual exclusion} (RME) problem. RME is a generalization of the standard mutual exclusion problem, whereby a process that crashes while accessing a lock is resurrected eventually and allowed to execute recovery actions. %From some respects, our model can be viewed as a generalization of their model to arbitrary concurrent objects. RME locks may be nested within each other, which may be viewed as a specific type of composability. Upon a crash-failure of such a composite lock, the recovery code sections of the nested locks are executed in order, starting from the outermost lock. In contrast, in our model only the recovery cod of the inner-most function is invoked. 
+The RME problem was further studied in~\cite{DBLP:conf/podc/GolabH17,DBLP:conf/wdag/JayantiJ17}). Some additional works investigated lock recoverability in different models \cite{DBLP:journals/tcs/AbrahamDHK01,DBLP:conf/spdp/BohannonLS96,DBLP:conf/spdp/BohannonLS0G95,DBLP:conf/oopsla/ChakrabartiBB14,Taubenfeld:2006:SAC:1211700}.
+
+A \emph{consistency} condition specifies how to derive the semantics
+of a concurrent implementation of a data structure from its
+\emph{sequential specification}.
+This requires to disambiguate the expected results of concurrent
+operations on the data structure, as done for example in
+\emph{linearizability}~\cite{herlihyWingLinearizability}.
+Linearizability guarantees a locality property required for composability,
+but it cannot be directly used for specifying recoverable objects,
+since it has no notion of an aborted or failed operation, and hence, no notion of recovery.
+
+Several consistency conditions for crash-recovery model were suggested,
+aiming to maintain the consistent state of concurrent objects.
+However, none of them ensures that a process is able to infer
+whether the failed operation completed and, if so, to obtain its response value.
+
+Aguilera and Fr{\o}lund~\cite{Aguilera2003StrictLA} proposed \emph{strict
+linearizability} as a correctness condition for recoverable objects.
+It treats the crash of a process as a response,
+either successful or unsuccessful, to the interrupted operation.
+%A successful response means that the operation takes effect at some
+%point between its invocation and the crash-failure, and an unsuccessful
+%response means that the operation does not take effect at all.
+Strict linearizability preserves both \emph{locality}~\cite{herlihy91waitfree}
+and program order.
+%Although this property seems like a natural extension for linearizability, Aguilera and Fr{\o}lund proved that, unlike linearizability, it precludes the implementation of some wait-free objects for certain machine models:
+%there is no wait-free implementations of multi-reader single-writer (MRSW) registers from single-reader single-writer (SRSW) registers under strict linearizability.
+Guerraoui and Levy~\cite{DBLP:conf/icdcs/GuerraouiL04} define
+\emph{persistent atomicity}. It is similar to strict linearizability,
+but allows an operation interrupted by a failure to take effect before
+the subsequent invocation of the same process, possibly after the failure.
+They also proposed \emph{transient atomicity}, which relaxes this criterion
+even further and allows an interrupted operation to take effect before
+the subsequent write response of the same process.
+Both conditions ensure that the state of an object will be consistent
+in the wake of a crash, but they do not provide locality.
+%correct histories of separate objects, when merged,
+%will not necessarily yield a correct composite history.
+
+Berryhill et al.~\cite{DBLP:conf/opodis/BerryhillGT15} present an
+alternative condition, called \emph{recoverable linearizability},
+which achieves locality but may compromise program order following a crash.
+%It is a relaxed version of persistent atomicity, which requires the operation
+%to be linearized or aborted before any subsequent linearization by the
+%pending thread on that same object.
+Whereas \cite{Aguilera2003StrictLA,DBLP:conf/opodis/BerryhillGT15,DBLP:conf/icdcs/GuerraouiL04}
+consider an \emph{individual process failures} model in which any subset
+of the processes may crash-fail at any time,
+Izraelevitz et al.~\cite{DBLP:conf/wdag/IzraelevitzMS16} consider a
+\emph{simultaneous failures} model, in which processes always crash-fail together.
+Under this model, persistent atomicity and recoverable linearizability are
+indistinguishable. 
+%The term \emph{durable linearizability} was used to refer to this merged
+%consistency condition under the simultaneous failures model.
+
+Several previous works investigated transactional access
+of persistent shared objects and NVRAM-based system recovery ~\cite{BoehmC-ISMM2016,KolliPSCW-Asplos2016,MaratheSBH-HotStorage2017,DBLP:conf/vldb/SchwalbDUP15,DBLP:conf/asplos/NarayananH12,VenkataramanTRC-FAST2011,VolosTS-Asplos2011}.
+Coburn et al.~\cite{CoburnCAGGJW-Asplos2011} presented \emph{NV-heaps},
+a software user-level library that allows using NVRAM directly
+for storing object state and recovery data. Cohen et al.~\cite{DBLP:journals/pacmpl/CohenFL17} recently presented an efficient logging protocol for NVRAM.
+Friedman et al.~\cite{Erez-et-al-DISC-17} presented three concurrent lock-free queue algorithms exhibiting different tradeoffs between consistency and efficiency. 
+
+
+

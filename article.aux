@@ -16,65 +16,145 @@
 \gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{herlihy91waitfree}
+\citation{GolabR16}
+\citation{Aguilera2003StrictLA}
+\citation{DBLP:conf/opodis/BerryhillGT15}
+\citation{DBLP:conf/icdcs/GuerraouiL04}
+\citation{DBLP:conf/wdag/IzraelevitzMS16}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}}
-\citation{LamportSC}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Model and Definitions}{2}{section.2}}
+\newlabel{section: Model}{{2}{2}{Model and Definitions}{section.2}{}}
+\newlabel{def:strict-recoverable-op}{{1}{3}{}{definition.1}{}}
+\citation{herlihyWingLinearizability}
+\newlabel{Definition: Linearizability}{{2}{4}{Linearizability \cite {herlihyWingLinearizability}, rephrased}{definition.2}{}}
+\newlabel{def:recoverable-well-formedness}{{3}{4}{Recoverable Well-Formedness}{definition.3}{}}
+\newlabel{Definition:CRL}{{4}{4}{Composable Recoverable Linearizability (CRL)}{definition.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Recoverable Base Objects}{4}{section.3}}
+\newlabel{section: Recoverable Base Objects}{{3}{4}{Recoverable Base Objects}{section.3}{}}
+\newlabel{all-histories-well-formed}{{1}{5}{}{lemma.1}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces recoverable read/write object $R$, program for process $p$}}{6}{algorithm.1}}
+\newlabel{alg:recoverable-write}{{1}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-start}{{2}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-first}{{3}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-to-R}{{4}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-second}{{5}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{read-first}{{7}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{read-read-R}{{8}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{read-return}{{9}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-recover:read-Sp}{{11}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-recover:if-did-not-start}{{12}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-recover:reexecute1}{{13}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-recover:read-R}{{14}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-recover:update-Sp}{{16}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{write-recover:return-ack}{{17}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{read-recover-start}{{18}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{read-recover-read-R}{{19}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{read-recover-return}{{20}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\newlabel{read-recover-last}{{20}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
+\citation{herlihy91waitfree}
+\newlabel{lemma:CAS-alg-is-CRL}{{3}{7}{}{lemma.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces recoverable CAS object $C$, program for process $p$}}{7}{algorithm.2}}
+\newlabel{alg:recoverable-CAS}{{2}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:start}{{2}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:if-compare-read}{{3}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:return-false}{{4}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:write-C-value}{{6}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:primitive-apply}{{7}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:operation-return}{{8}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:read-start}{{10}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:read-return}{{11}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:recover-read-vars}{{13}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:recover-returns-true}{{14}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:recover-re-execute}{{16}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:read-recover-start}{{18}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\newlabel{cas:read-recover-return}{{19}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\citation{DBLP:journals/jacm/FischerLP85}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces recoverable Counter object $N$, program for process $p$}}{9}{algorithm.3}}
+\newlabel{alg:recoverable-counter}{{3}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
+\newlabel{count:inc-start}{{2}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
+\newlabel{count:inc-invoke-write}{{4}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
+\newlabel{count:inc-return}{{5}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
+\newlabel{count:inc-use-LI}{{7}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
+\newlabel{count:read-start}{{12}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
+\citation{GolabR16}
+\citation{DBLP:conf/podc/GolabH17}
+\citation{DBLP:conf/wdag/JayantiJ17}
+\citation{DBLP:journals/tcs/AbrahamDHK01}
+\citation{DBLP:conf/spdp/BohannonLS96}
+\citation{DBLP:conf/spdp/BohannonLS0G95}
+\citation{DBLP:conf/oopsla/ChakrabartiBB14}
+\citation{Taubenfeld:2006:SAC:1211700}
 \citation{herlihyWingLinearizability}
 \citation{Aguilera2003StrictLA}
 \citation{herlihy91waitfree}
 \citation{DBLP:conf/icdcs/GuerraouiL04}
-\citation{DBLP:conf/podc/Censor-HillelPT15}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Related work}{2}{subsection.1.1}}
 \citation{DBLP:conf/opodis/BerryhillGT15}
+\citation{Aguilera2003StrictLA}
+\citation{DBLP:conf/opodis/BerryhillGT15}
+\citation{DBLP:conf/icdcs/GuerraouiL04}
 \citation{DBLP:conf/wdag/IzraelevitzMS16}
-\citation{gr:rme}
-\citation{DBLP:conf/podc/GolabH17}
-\citation{Jayanti-DISC-17}
-\citation{herlihyWingLinearizability}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Model and Definitions}{4}{section.2}}
-\newlabel{section: Model}{{2}{4}{Model and Definitions}{section.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Standard Shared-Memory Model}{4}{subsection.2.1}}
-\citation{DBLP:conf/opodis/BerryhillGT15}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.1}Correcntess Conditions}{5}{subsubsection.2.1.1}}
-\newlabel{Definition: Linearizability}{{1}{5}{Linearizability}{definition.1}{}}
-\newlabel{Definition: Strict linearizability}{{2}{5}{Strict linearizability}{definition.2}{}}
-\newlabel{Definition: Persistent linearizability}{{3}{5}{Persistent linearizability}{definition.3}{}}
-\citation{DBLP:conf/opodis/BerryhillGT15}
-\citation{DBLP:conf/wdag/FriedmanHMP17}
-\citation{DBLP:conf/wdag/FriedmanHMP17}
-\newlabel{Definition: Recoverable linearizability}{{4}{6}{Recoverable linearizability}{definition.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.2}Recoverable Response Linearizability}{6}{subsubsection.2.1.2}}
-\newlabel{Definition: RR-linearizability}{{5}{7}{Recoverable response linearizability}{definition.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Recoverable Base Objects}{7}{section.3}}
-\newlabel{section: Recoverable Base Objects}{{3}{7}{Recoverable Base Objects}{section.3}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {Write}{\ignorespaces program for process $p$}}{9}{algorithm.Write}}
-\newlabel{alg:recoverable-write}{{Write}{9}{Write}{algorithm.Write}{}}
-\newlabel{write-first}{{3}{9}{Write}{algorithm.Write}{}}
-\newlabel{write-second}{{5}{9}{Write}{algorithm.Write}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {Compare-and-Swap}{\ignorespaces program for process $p$}}{11}{algorithm.Compare-and-Swap}}
-\newlabel{alg:recoverable-CAS}{{Compare-and-Swap}{11}{Compare-and-Swap}{algorithm.Compare-and-Swap}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {Test-and-Set}{\ignorespaces program for process $p$}}{14}{algorithm.Test-and-Set}}
-\newlabel{alg:recoverable-TAS}{{Test-and-Set}{14}{Test-and-Set}{algorithm.Test-and-Set}{}}
-\newlabel{return code}{{31}{14}{Test-and-Set}{algorithm.Test-and-Set}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {Counter}{\ignorespaces program for process $p$}}{14}{algorithm.Counter}}
-\newlabel{alg:recoverable-counter}{{Counter}{14}{Read}{algorithm.Counter}{}}
-\citation{DBLP:journals/siamcomp/JayantiTT00}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{15}{section.4}}
-\newlabel{section: Discussion}{{4}{15}{Discussion}{section.4}{}}
+\citation{BoehmC-ISMM2016}
+\citation{KolliPSCW-Asplos2016}
+\citation{MaratheSBH-HotStorage2017}
+\citation{DBLP:conf/vldb/SchwalbDUP15}
+\citation{DBLP:conf/asplos/NarayananH12}
+\citation{VenkataramanTRC-FAST2011}
+\citation{VolosTS-Asplos2011}
+\citation{CoburnCAGGJW-Asplos2011}
+\citation{DBLP:journals/pacmpl/CohenFL17}
+\citation{Erez-et-al-DISC-17}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Related Work}{10}{section.4}}
+\newlabel{sec:related}{{4}{10}{Related Work}{section.4}{}}
 \bibstyle{abbrv}
 \bibdata{references}
-\bibcite{Aguilera2003StrictLA}{1}
-\bibcite{DBLP:conf/opodis/BerryhillGT15}{2}
-\bibcite{DBLP:conf/podc/Censor-HillelPT15}{3}
-\bibcite{DBLP:journals/jacm/FischerLP85}{4}
-\bibcite{DBLP:conf/wdag/FriedmanHMP17}{5}
-\bibcite{DBLP:conf/podc/GolabH17}{6}
-\bibcite{gr:rme}{7}
-\bibcite{DBLP:conf/icdcs/GuerraouiL04}{8}
-\bibcite{herlihy91waitfree}{9}
-\bibcite{herlihyWingLinearizability}{10}
-\bibcite{DBLP:conf/wdag/IzraelevitzMS16}{11}
-\bibcite{Jayanti-DISC-17}{12}
-\bibcite{DBLP:journals/siamcomp/JayantiTT00}{13}
-\bibcite{LamportSC}{14}
-\citation{DBLP:journals/jacm/FischerLP85}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Formal Proofs}{17}{appendix.A}}
+\bibcite{DBLP:journals/tcs/AbrahamDHK01}{1}
+\bibcite{Aguilera2003StrictLA}{2}
+\bibcite{DBLP:conf/opodis/BerryhillGT15}{3}
+\bibcite{BoehmC-ISMM2016}{4}
+\bibcite{DBLP:conf/spdp/BohannonLS96}{5}
+\bibcite{DBLP:conf/spdp/BohannonLS0G95}{6}
+\bibcite{DBLP:conf/oopsla/ChakrabartiBB14}{7}
+\bibcite{CoburnCAGGJW-Asplos2011}{8}
+\bibcite{DBLP:journals/pacmpl/CohenFL17}{9}
+\bibcite{DBLP:journals/jacm/FischerLP85}{10}
+\bibcite{Erez-et-al-DISC-17}{11}
+\bibcite{DBLP:conf/podc/GolabH17}{12}
+\bibcite{GolabR16}{13}
+\bibcite{DBLP:conf/icdcs/GuerraouiL04}{14}
+\bibcite{herlihy91waitfree}{15}
+\bibcite{herlihyWingLinearizability}{16}
+\bibcite{DBLP:conf/wdag/IzraelevitzMS16}{17}
+\bibcite{DBLP:conf/wdag/JayantiJ17}{18}
+\bibcite{KolliPSCW-Asplos2016}{19}
+\bibcite{MaratheSBH-HotStorage2017}{20}
+\bibcite{DBLP:conf/asplos/NarayananH12}{21}
+\bibcite{DBLP:conf/vldb/SchwalbDUP15}{22}
+\bibcite{Taubenfeld:2006:SAC:1211700}{23}
+\bibcite{VenkataramanTRC-FAST2011}{24}
+\bibcite{VolosTS-Asplos2011}{25}
+\@writefile{toc}{\contentsline {section}{\numberline {A}A Recoverable Test-and-Set Object}{13}{appendix.A}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces recoverable TAS object $T$, program for process $p$}}{13}{algorithm.4}}
+\newlabel{alg:recoverable-TAS}{{4}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:start}{{2}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:check-doorway}{{3}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:doorway-return-1}{{4}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:set-R[p]-2}{{6}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:close-doorway}{{7}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:tas-primitive}{{8}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:write-to-winner}{{10}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:return-code}{{11}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:set-R[p]-3}{{12}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:start}{{15}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:return-operation-done}{{17}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:check-winner}{{20}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:close-doorway}{{22}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:set-R[p]-4}{{23}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:tas-primitive}{{24}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:wait-lower-id}{{25}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:wait-higher-id}{{27}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:winner-not-overwrite}{{29}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:write-winner}{{30}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:return-code}{{31}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\newlabel{tas:rec:set-R[p]-3}{{33}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Proofs Omitted for Lack of Space}{15}{appendix.B}}

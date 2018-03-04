@@ -1,8 +1,9 @@
 \begin{titlepage}
 	
-	\title{NVRAM - response recover linearzability \thanks{
+	\title{Composable Recoverable Linearizability:\\
+            Hierarchical Constructions for Non-Volatile Memory\thanks{
 		Partially supported by the Israel Science Foundation
-		(grants 1227/10, 1749/14) and by the Lynne and William Frankel Center for Computing Science at Ben-Gurion University.}}
+		(grant 1749/14) and by the Lynne and William Frankel Center for Computing Science at Ben-Gurion University.}}
 	
 	
 	\author[1]{Hagit Attiya}
@@ -13,18 +14,41 @@
 	\affil[2]{Department of Computer-Science, Ben-Gurion University, \tt{ohadben@post.bgu.ac.il}, +972(0)524261187 \thanks{Contact author.}}
 	\affil[3]{Department of Computer-Science, Ben-Gurion University, \tt{hendlerd@cs.bgu.ac.il}, +972(0)86428038}
 	
+    \date{February 18, 2018}
 	\maketitle
 
-
-
-
 \begin{abstract}
-	abstract goes here...
+We presents a novel abstract individual-process crash-recovery model for non-volatile memory, which enables \emph{composition}, so that complex recoverable objects can be constructed in a modular manner from simpler recoverable base objects. Within the framework of this model, we define \emph{composable recoverable linearizability} (CRL) -- a novel correctness condition that captures the requirements for recoverable objects composability. Informally, CRL allows the recovery code to extend the interval of the failed operation until the recovery code succeeds to complete
+(possibly after multiple failures and recovery attempts).
+%It requires that either
+%the operation is linearized at some point between its invocation
+%and the completion of recovery code
+%or it has no effect.
+Unlike previous correctness definitions, the CRL condition implies that,
+following recovery, an implemented (higher-level) recoverable operation
+is able to complete its invocation of a base-object operation and obtain its response.
 
+We present algorithms for \emph{composable recoverable primitives},
+namely, recoverable versions of widely-used primitive shared-memory
+operations such as read, write, test-and-set and compare-and-swap,
+which can be used to implement higher-level recoverable objects. We then  
+exemplify how these recoverable base objects can be used for constructing a 
+recoverable counter object. 
 
-
+Finally, we prove an impossibility result on wait-free implementations of recoverable test-and-set (TAS) objects from read, write and TAS operations, thus demonstrating that our model also facilitates
+rigorous analysis of the limitations of recoverable concurrent objects.
 \end{abstract}
+
+\bigskip
+
+\noindent {\small \textbf{Please consider this submission for publication as a Regular Paper or Brief Announcement.}}
+
+\bigskip
+
+\noindent {\small \textbf{This submission is eligible for the Best Student Paper Award - Ohad Ben-Baruch is a full-time student.}}
+
+
 
 
 \maketitle \thispagestyle{empty}
-\end{titlepage}
+\end{titlepage} 

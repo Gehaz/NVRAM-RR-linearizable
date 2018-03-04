@@ -1,0 +1,25 @@
+
+S_p integer. may assume values 0,1,2
+C_p counter initially 0
+R_p integer initially null
+
+
+procedure Write(v)
+------------------
+1 S_p: = 0
+2 C_p++
+3 R_p := R
+4 S_p := 1
+5 R := <v,p,C_p>
+6 S_p := 2
+7 return ack
+
+procedure Recover(v)
+10. if S_p = 2 return ack
+11. if S_p = 0 proceed from line 1
+12. if R = R_p proceed from line 1
+13. else return ack
+
+
+
+

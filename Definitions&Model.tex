@@ -2,80 +2,106 @@
 \section{Model and Definitions}
 \label{section: Model}
 
-\subsection{Standard Shared-Memory Model}
+%\subsection{Standard Shared-Memory Model}
 
-We use a standard model, based on Herlihy and Wing's model \cite{herlihyWingLinearizability}, of an asynchronous shared memory system. A set $P$ of $n > 1$ \textit{processes} $p_0, \ldots, p_{n-1}$ communicate by applying operations on shared \textit{base objects} that support atomic operations, e.g., reads, writes and read-modify-write, to shared variables. No bound is assumed on the size of a shared variable (i.e., the number of distinct values it can take).
-Base objects are used in order to construct more complex implemented objects, such as queues and stacks, by defining access procedures that simulate each operation on the implemented object using operations on base objects.
+We consider a system where $N$ asynchronous \textit{unreliable processes} $p_1, \ldots, p_{N}$ communicate by applying operations to \emph{concurrent objects}. The system provides \textit{base objects} that support atomic read, write, and read-modify-write operations.
+%No bound is assumed on the size of a shared variable (i.e., the number of distinct values it can take).
+Base objects can be used for implementing more complex concurrent objects (e.g. counters, queues and stacks), by defining access procedures that simulate each operation on the implemented object using operations on base objects. These may be used in turn similarly for implementing even more complex objects, and so on.
 
-The interaction of processes with implemented objects is modelled using steps and histories. There are four types of steps:
-\begin{inparaenum}[(1)]
-	\item an invocation step, denoted $(INV, p, X, op)$, represents the invocation by process $p$ of an operation $op$ on implemented object $X$;
-	\item a response step, denoted $(RES, p, X, ret)$, represents the completion by process $p$ of the last operation it invoked on object $X$, with response $ret$;
-	\item a crash step, denoted $(CRASH, p)$, represents the crash of a processes $p$;
-%	\item a recovery step, denoted $(REC, p)$, represents the recovery of a process $p$. This step is the only one allowed by $p$ after a $(CRASH, p)$ step.
-\end{inparaenum}
+The state of each process consists of non-volatile \emph{shared-memory variables}, as well as \emph{local variables stored in volatile processor registers}. Each process can incur at any point during the execution a \emph{crash-failure} (or simply a \emph{crash}) that resets all its local variables to arbitrary values, but preserves the values of all its non-volatile variables. A process $p$ \emph{invokes an operation} $Op$ on an object by performing an \emph{invocation step}. Upon \emph{Op}'s completion, a \emph{response step} is executed, in which \emph{Op's response is stored to a local variable of $p$}. It follows that the response value is lost if $p$ incurs a crash before persisting it.
 
-A \textit{history} $H$ is a sequence of steps. Given a history $H$, we use $H | p$ to denote the subhistory of $H$ containing all and only the events performed by process $p$. Similarly, $H | O$ denotes the subhistory of $H$ containing all and only the events performed on object $O$, plus crash and recovery events.
-A response step is \textit{matching} with respect to an invocation step $s$ by a process $p$ on object $X$ in a history $H$ if it is the first response step by $p$ on $X$ that follows $s$ in $H$, and it occurs before $p$'s next invocation (if any) in $H$.
+Operation $Op$ is \emph{pending} if it was invoked but was not yet completed. For simplicity, we assume that, at all times, each process has at most a single pending operation on any one object.\footnote{This assumption can be removed, but this would require substantial changes to the notions of sequential executions and linearizability which we chose to avoid in this work.}
+A \emph{recoverable operation Op} is associated with a \emph{recovery function}, denoted $Op.\texttt{Recover}$, that is responsible for completing $Op$ upon recovery from a crash. The execution of operations (and recoverable operations in particular) may be nested, that is, an operation $Op_1$ can invoke another operation $Op_2$. %Thus, at any point in the execution, \emph{each process may have multiple pending operations}. For simplicity, we assume that, at all times, each process has at most a single pending operation on any one object.\footnote{This assumption can be removed, but this would require substantial changes to the notions of %sequential executions and linearizability which we chose to avoid in this work.}
+Following a crash of process $p$ that occurs when $p$ has one or more pending recoverable operations, the system eventually resurrects process $p$ by invoking the recovery function of the inner-most recoverable operation that was pending when $p$ failed. This is represented by a \emph{recover step for p}
 
-Given a history $H$ and a process $p$, an \textit{operation} by $p$ in $H$ comprises an invocation step and its matching response, if it exists. An operation is \textit{complete} if it has a matching response step, and \textit{pending} otherwise. Given two operations $op_1$ and $op_2$ in a history $H$, we say that $op_1$ \textit{happens before} $op_2$, denoted by $op_1 <_H op_2$, if $op_1$ has a matching
-response that precedes the invocation step of $op_2$ in $H$. If neither $op_1 <_H op_2$ nor $op_2 <_H op_1$ holds then we say that $op_1$ and $op_2$ are \textit{concurrent} in $H$.
+%such that if a process crash while executing an operation on the recoverable object, upon recovering the %appropriate \texttt{Recover} function is triggered (by the system), and we require the process to complete its %pending operation before invoking the next one. As we explain later, the completion requirement, although %seems too restrictive, does not rule out an option for the \texttt{Recover} function to abort the pending %operation, as in such case the process can reissue it. Nevertheless, this restriction simplifies the %definition and proofs.
 
-A history $H$ is \textit{sequential} if no two operations in it are concurrent. Two histories $H$ and $H'$ are \textit{equivalent} if for every process $p$, $H|p = H'|p$ holds. A history $H$ is \textit{well-formed} if for each process $p$, each invocation step in $H|p$ is immediately followed by a matching response, or by a crash step, and every response step in $H|p$ is a matching response for a preceded invocation. Informally, $H$ is well-formed if $H|p$ is a sequential history of operations, except for the ones that may not have a response step due to crash steps.
+More formally, a \textit{history} $H$ is a sequence of \emph{steps}. There are four types of steps:
+\begin{enumerate}
+	\item an \emph{invocation step}, denoted $(INV, p, O, Op)$, represents the invocation by process $p$ of operation $Op$ on object $O$;
+	\item an operation $Op$ can be completed either normally or when, following one or more crashes, the execution of $Op.\texttt{Recover}$ is completed. In either case, a \emph{response step} $s$, denoted $(RES, p, O, Op, ret)$, represents the completion by process $p$ of operation $Op$ invoked on object $O$ by some step $s'$ of $p$, with response $ret$ being written to a local variable of $p$. We say that \emph{s is the response step that matches s'};
+	\item a \emph{crash step} $s$, denoted $(CRASH, p)$, represents the crash of process $p$. We call the inner-most recoverable operation $Op$ of $p$ that was pending when the crash occurred the \emph{crashed operation of s}. $(CRASH, p)$ may also occur while $p$ is executing some recovery function $Op.\texttt{Recover}$ and we say that $Op$ is the crashed operation of $s$ also in this case;
+	\item a \emph{recovery step $s$ for process p}, denoted $(REC, p)$, is the only step by $p$ that is allowed to follow a $(CRASH, p)$ step $s'$. It represents the resurrection of $p$ by the system, in which it invokes $Op.\texttt{Recover}$,\footnote{A history does not contain invocation/response steps for recovery functions.} where $Op$ is the crashed operation of $s'$.
+We say that \emph{s is the recovery step that matches} $s'$.
+\end{enumerate}
 
-An object $O$ is defined using a \textit{sequential specification} which defines its allowed behaviors and is expressed as a set of possible sequential histories over $O$. A sequential history $H$ is legal if for every implemented object $O$ accessed in $H$, $H|O$ belongs to the sequential specification of $O$.
+When a recovery function $Op.\texttt{Recover}$ is invoked by the system to recover from a crash represented by step $s$, we assume it receives the same arguments as those with which $Op$ was invoked when that crash occurred. We also assume that $Op.\texttt{Recover}$ has access to a designated per-process non-volatile variable $\text{LI}_p$, identifying the instruction of $Op$ that $p$ was about to execute in the crash represented by $s$. An object is a \emph{recoverable object} if all its operations are recoverable. In the following definitions, we consider only histories that arise from operations on recoverable objects or atomic primitive operations.
+
+Consider a scenario in which $p$ incurs a crash (represented by a crash step $s$) immediately after a recoverable operation $Op$ completes (either directly or through the completion of  $Op.\texttt{Recover}$) -- an event represented by a response step $r$. In this case, the response value is lost and, moreover, $Op.\texttt{Recover}$ will not be invoked by the system, since the crashed operation of $s$ is no longer $Op$ but, rather, the operation $Op'$ that invoked $Op$. In general (although there are exceptions to the rule as we will see in Section \ref{section: Recoverable Base Objects}), $Op'$ may therefore not be able to proceed correctly. Hence, it is sometimes required to guarantee that a recoverable operation returns only once its response value gets persisted. This is defined formally as follows.
+
+\begin{definition}
+\label{def:strict-recoverable-op}
+A recoverable operation $Op$ is a \textit{strict recoverable operation} if whenever it is completed, either directly or by the completion of $Op.\texttt{Recover}$, (an event represented by a $(RES,p,O,Op,ret)$ step), $ret$ is stored in a designated persistent variable accessed only by process $p$.
+\end{definition}
+
+%We emphasize that the requirement of Definition \ref{def:strict-recoverable-op} does not imply any changes in object semantics, as we do not require that the response value is persisted when $Op$ is linearized.
+%In Section \ref{section: Recoverable Base Objects} we present algorithms for several recoverable primitives, as well as a recoverable counter that uses a non-strict recoverable read operation for efficiency reasons.
+
+For a history $H$, we let $H | p$ denote the subhistory of $H$ consisting of all the steps by process $p$ in $H$. We let $H | O$ denote the subhistory of $H$ consisting of all the invoke and response steps on object $O$ in $H$, as well as any crash step in $H$, by any process $p$, whose crashed operation is an operation on $O$ and the corresponding recover step by $p$ (if it appears in $H$). $H$ is \emph{crash-free} if it contains no crash steps (hence also no recover steps). We let $H|{<}p,O{>}$ denote the subhistory consisting of all the steps on $O$ by $p$. %$H$ is \emph{crash-free} if it contains no crash/recover steps. 
+A crash-free subhistory $H | O$ is well-formed, if for all processes $p$, $H|{<}p,O{>}$ is a sequence of alternative matching invocation and response steps, starting with an invocation step.
 
 
-\subsubsection{Correcntess Conditions}
-We now consider different variants of correctness conditions for NVRAM systems which takes into consideration failures. We follow Berryhill et al. \cite{DBLP:conf/opodis/BerryhillGT15} for formal definitions. For each variant, given a history $H$, we first define a way to extend $H$ such that some pending operations are supplied with a matching response, and the rest pending operations are removed, followed by a definition containing requirements from the resulted extension.
+%For a history $H$, we let $H | p$ denote the subhistory of $H$ consisting of all the steps by process $p$ in %$H$, and let $H | O$ denote the subhistory consisting of all the %invoke and response
+%steps on object $O$ in $H$. These subhistories consist of all the invoke and response steps on object $O$ in %$H$, as well as any crash step in $H$, by any process $p$, whose crashed operation is an operation on $O$ and %the corresponding recover step by $p$ (if it appears in $H$).%
+%and $H|{<}p,O{>}$ denote the subhistory consisting of all the steps on $O$ by $p$. $H$ is \emph{crash-free} if it contains no crash/recover steps. A crash-free subhistory $H | O$ is well-formed, if for all processes $p$, $H|{<}p,O{>}$ is a sequence of alternative matching invocation and response steps, starting with an invocation step.
 
-All the following variants are in some sense a natural extension for the Herlihy and Wing's linearizability property, since it is widely used in conventional shared memory models. As such, we first give a formal definition for linearizability. However, linearizability does not support crash steps, and therefore the definition is valid for history $H$ which is free of crash steps. Given such a history $H$, a \textit{completion} of $H$ is a history $H'$ constructed from $H$ by appending matching responses for a subset of pending operations, and then removing any remaining pending operations.
+%as well as any crash step in $H$, by any process $p$, whose crashed operation is an operation on $O$ and the corresponding recover step by $p$ (if it appears in $H$).
 
-\begin{definition} [Linearizability]
+%A response step is \textit{matching} with respect to an invocation step $s$ by a process $p$ on object $O$ in %a history $H$ if it is the first response step by $p$ on $O$ that follows $s$ in $H$, and it occurs before %$p$'s next invocation (if any) in $H$.
+
+%For history $H$ and process $p$, an \textit{operation} by $p$ in $H$ comprises an invocation step and its matching response, if it exists. An operation is \textit{complete} if it has a matching response step, and \textit{pending} otherwise.
+Given two operations $op_1$ and $op_2$ in a history $H$, we say that $op_1$ \textit{happens before} $op_2$, denoted by $op_1 <_H op_2$, if $op_1$'s response step precedes the invocation step of $op_2$ in $H$. If neither $op_1 <_H op_2$ nor $op_2 <_H op_1$ holds then we say that $op_1$ and $op_2$ are \textit{concurrent} in $H$.
+$H | O$ is a \emph{sequential object history}, if it is an alternating series of invocations and the matching responses starting with an invocation (that may end by a pending invocation). The \textit{sequential specification} of an object $O$ is the set of all possible (legal) sequential histories over $O$. $H$ is a \emph{sequential history} if $H | O$ is a sequential object history for all objects $O$.
+
+
+%As already mentioned, our model allows histories in which a process may have multiple pending operations on different objects, since it explicitly considers implemented operations that invoke other implemented operations. We call such a history a \emph{nested history}. A nested history may not be sequential even if it is a single-process history. We next define notions that allow us to argue about the correctness of nested histories.
+A crash-free history $H$ is \emph{well-formed} if: 1) $H | O$ is well-formed for all objects $O$, and 2) For all $p$, if $i_1,r_1$ and $i_2,r_2$ are two matching invocation/response steps in $H | p$ and $i_1 <_H i_2 <_H r_1$ holds, then $r_2 <_H r_1$ holds as well. The second requirement guarantees that if operation $Op_1$ invokes operation $Op_2$, $Op_2$'s response must precede $Op_1$'s response.
+%
+%\begin{definition}[Nested well-formedness]
+%A crash-free history $H$ is \textit{well-formed} if the following holds.
+%\begin{enumerate}
+%\item For all $O$, $H | O$ is well-formed.
+%\item For all $p$, let $i_1,r_1$ and $i_2,r_2$ denote two matching invocation/response steps in $H | p$. If %$i_1 <_H i_2 <_H r_1$ holds, then $r_2 <_H r_1$ holds as well.
+%\end{enumerate}%
+%
+%\end{definition}
+Two histories $H$ and $H'$ are \emph{equivalent}, if $H|{<}p,O{>}=H'|{<}p,O{>}$ for all processes $p$ and objects $O$. A history $H$ is \textit{sequential}, if $H | O$ is sequential for all objects $O$ that appear in $H$.
+%Two histories $H$ and $H'$ are \textit{object-equivalent} if for every process $p$ and object $O$, $H|{<}p,O{>} = H'|{<}p,O{>}$ holds. A history $H$ is \textit{object-sequential} if $H | O$ is sequential for all objects $O$ that appear in $H$. An object-sequential history H is \emph{legal}, if for every object $O$ that appears in $H$, $H|O$ belongs to the sequential specification of $O$.
+Given a history $H$, a \textit{completion} of $H$ is a history $H'$ constructed from $H$ by selecting separately, for each object $O$ that appears in $H$, a subset of the operations pending on $O$ in $H$ and appending matching responses to all these operations, and then removing all remaining pending operations on $O$ (if any).
+
+\begin{definition} [Linearizability \cite{herlihyWingLinearizability}, rephrased]
 	\label{Definition: Linearizability}
-	A finite history $H$ is linearizable if it has no crash events, and it has a completion $H'$ and there exists a legal sequential history $S$ such that:
+A finite crash-free history $H$ is \emph{linearizable} if it has a completion $H'$ and a legal sequential history $S$ such that:
 	\begin{enumerate}
 		\item [L1.] $H'$ is equivalent to $S$; and
 		\item [L2.] $<_H \subseteq <_S$ (i.e., if $op_1 <_H op_2$ and both ops appear in $S$ then $op_1 <_S op_2$).
 	\end{enumerate}
 \end{definition}
 
-For strict linearizability, a \textit{strict completion} of $H$ is a history $H'$ constructed from $H$ by inserting matching responses for a subset of pending operations after the operation’s invocation and before the next crash step (if any), and finally removing any remaining pending operations and crash steps.
+Thus, a finite history is linearizable, if we can linearize the subhistory of each object that appears in it.
+Next, we define a more general notion of well-formedness that applies also to histories that contain crash/recovery steps. For a history $H$, we let $N(H)$ denote the history obtained from $H$ by removing all crash and recovery steps.
 
-\begin{definition} [Strict linearizability]
-	\label{Definition: Strict linearizability} 
-	A finite history $H$ is strictly linearizable if it has a strict completion $H'$ and there exists a legal sequential history $S$ such that:
-	\begin{enumerate}
-		\item [SL1.] $H'$ is equivalent to $S$; and
-		\item [SL2.] $<_{H'} \subseteq <_S$ (i.e., if $op_1 <_{H'} op_2$ and both ops appear in $S$ then $op_1 <_S op_2$).
-	\end{enumerate}
+\begin{definition} [Recoverable Well-Formedness]
+\label{def:recoverable-well-formedness}
+A history $H$ is \textit{recoverable well-formed} if the following holds.
+\begin{enumerate}
+\item Every crash step in $H | p$ is either $p$'s last step in $H$ or is followed in $H | p$ by a matching recover step of $p$.
+\item $N(H)$ is well-formed.
+\end{enumerate}
 \end{definition}
 
-For persistent linearizability, a \textit{persistent completion} of $H$ is a history $H'$ constructed from $H$ by inserting matching responses for a subset of pending operations after the operation’s invocation and before the next invocation step of the same process, and finally removing any remaining pending operations and crash steps.
+We can now define the notion of composable recoverable linearizability.
 
-\begin{definition} [Persistent linearizability]
-	\label{Definition: Persistent linearizability}
-	A finite history $H$ is persistently linearizable if it has a persistent completion $H'$ and there exists a legal sequential history $S$ such that both conditions SL1 and SL2 of definition \ref{Definition: Strict linearizability} holds.
+\begin{definition} [Composable Recoverable Linearizability (CRL)]
+\label{Definition:CRL}
+A finite history $H$ satisfies \emph{composable recoverable linearizability} (CRL) if it is recoverable well-formed and $N(H)$ is a linearizable history.
+An object implementation satisfies CRL if all of its finite histories satisfy CRL.
 \end{definition}
 
 
-For recoverable linearizability, a \textit{recoverable completion} $H'$ is obtained from $H$ in exactly the same manner as a strict completion. In addition, the \textit{invoked before} relation over a history $H$, denoted $\ll_H$ is an extension of the "happens before" relation, such that $op_1 \ll_H op_2$ if $op_1 <_H op_2$ or that both operations invoked by the same process $p$ on the same object $X$, and the invocation step of $op_1$ precedes the invocation step of $op_2$ in $H$. Notice that the extension takes into account pending operations, while $<_H$ is not defined in such a case.
 
-\begin{definition} [Recoverable linearizability]
-	\label{Definition: Recoverable linearizability}
-	A finite history $H$ is recoverable linearizable if it has a recoverable completion $H'$ and there exists a legal sequential history $S$ such that:
-	\begin{enumerate}
-		\item [RL1.] $H'$ is equivalent to $S$; and
-		\item [RL2.] $\ll_H \subseteq <_S$ (i.e., if $op_1 \ll_H op_2$ and both ops appear in $S$ then $op_1 <_S op_2$).
-	\end{enumerate}
-\end{definition}
-
-As shown by Berryhill et al. \cite{DBLP:conf/opodis/BerryhillGT15}, the requirement for a strict completion $H'$ does not prevent an operation from taking effect after a crash that interrupts it. This follows from the fact that unlike strict linearizability, we do not ask the sequential history $S$ to respect the order $<_{H'}$, but rather the order $<_H$. For an operation $op$ that was interrupt by a crash, in $<_H$ it is after any operation that was complete before the invocation of $op$, but there is no operation following $op$ in $<_H$, since it has no response. Therefore, in $S$ we allow to place $op$ anywhere after its invocation without violating $<_H$. However, in order to prevent program order inversion of the same process on the same object, $\ll_H$ restrict $S$ not place $op$ in such a reverse order.
-
-
-
-\subsubsection{Recoverable Response Linearizability}
-As discussed in the introduction, none of the above definitions guarantee a failing process can complete its pending operation upon recovery, or at least have an access to the response value of the operation in case it is linearized. In some cases, a process might be able to know whether the operation took effect. Friedman et al. \cite{DBLP:conf/wdag/FriedmanHMP17} used the term \textit{detectable execution} for an implementation which satisfy this condition. Quoting from \cite{DBLP:conf/wdag/FriedmanHMP17}: "Durable linearizability does not provide a mechanism to determine whether an operation that executed concurrently with a crash was eventually executed. Without the ability to distinguish completed operations from lost operations, it would be difficult to recover the entire program, because in practice it is often important to execute each operation exactly once."
+\remove{%%%%%%%%%%%
+is immediately followed by a matching response, or by a crash step, and every response step in $H|p$ is a matching response for a preceded invocation. Informally, $H$ is well-formed if $H|p$ is a sequential history of operations, except for the ones that may not have a response step due to crash steps. The \textit{sequential specification} of an object $O$ is the set of possible sequential histories over $O$. \emph{A sequential history H is legal} if for every object $O$ that appears in $H$, $H|O$ belongs to the sequential specification of $O$.
 
 A concurrent object is called \textit{recoverable} if any of its operations is equipped with a \texttt{Recover} function, such that if a process crash while executing an operation on the recoverable object, upon recovering the appropriate \texttt{Recover} function is triggered (by the system), and we require the process to complete its pending operation before invoking the next one. As we explain later, the completion requirement, although seems too restrictive, does not rule out an option for the \texttt{Recover} function to abort the pending operation, as in such case the process can reissue it. Nevertheless, this restriction simplifies the definition and proofs.
 
@@ -92,10 +118,12 @@ One can think of different ways to persist the response value. For example, an o
 
 Notice that any object can be implemented in a recoverable manner, as long as there is no restriction on the correctness condition it requires to satisfy. The \texttt{Recover} function does not allow a process $p$ to invoke a new operation before completing the pending operation, hence in every history $H$ a process have at most a single pending operation which is his last invoked operation. Therefore a natural requirement for such an object is linearizability. Since every operation of a process needs to be complete (except for maybe the last one), and we use the original definition of linearizability, this implies that locality holds under this definition.
 
-\begin{definition} [Recoverable response linearizability]
-	\label{Definition: RR-linearizability}
-	A finite history $H$ is recoverable response linearizable if $H$ is recoverable well-formed and after removing all crash and recover steps from $H$ we get a well-formed linearizable history.
-\end{definition}
+
 
 The formal definition allows the use of recoverable objects only, as we require the history to be linearizable under the original Herlihy and Wing's definition. However, such objects can be used in a more general context. One may use recoverable objects only in critical parts of the program, as such an object guarantee the ability to recover and complete the operation in case of a crash. In the rest of the program, assuming data lost is less critical, a simpler objects can be used, e.g., implementations that only guarantee recoverable linearizability.
 In such a way, the programmer have the flexibility to protect certain parts of the program in the cost of time and space complexity by using the more powerful recoverable objects, while the rest of the program is more efficient but not completely robust to crashes.
+
+
+Recoverable object by its own does not consider the response value of the operation. For example, a primitive CAS is a recoverable object (with an empty \texttt{Recover} function), although a process crashing after executing CAS have no access to the response value upon recovery, as it was lost. For this reason we extend the definition of recoverable object, such that in addition to a \texttt{Recover} function it also needs to satisfy the following: every operation returns (i.e., there is a response step in the history) only after the response value is persistent. In a more formal way, a process $p$ have a designated variable $Res_p$ in the non-volatile memory such that at the time of $(RES,p,X,ret)$ step, the value $ret$ is written in $Res_p$.
+Notice that the object's semantic does not change, that is, we do not require the response value to be persistent at the linearization point.
+}%%%%%%%%% END REMOVE 
