@@ -52,7 +52,6 @@
 \newlabel{read-recover-read-R}{{19}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
 \newlabel{read-recover-return}{{20}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
 \newlabel{read-recover-last}{{20}{6}{A Recoverable Read-Write Object}{algorithm.1}{}}
-\citation{herlihy91waitfree}
 \newlabel{lemma:CAS-alg-is-CRL}{{3}{7}{}{lemma.3}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces recoverable CAS object $C$, program for process $p$}}{7}{algorithm.2}}
 \newlabel{alg:recoverable-CAS}{{2}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
@@ -69,14 +68,31 @@
 \newlabel{cas:recover-re-execute}{{16}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
 \newlabel{cas:read-recover-start}{{18}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
 \newlabel{cas:read-recover-return}{{19}{7}{A Recoverable Compare-and-Swap Object}{algorithm.2}{}}
+\citation{herlihy91waitfree}
 \citation{DBLP:journals/jacm/FischerLP85}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces recoverable Counter object $N$, program for process $p$}}{9}{algorithm.3}}
-\newlabel{alg:recoverable-counter}{{3}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
-\newlabel{count:inc-start}{{2}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
-\newlabel{count:inc-invoke-write}{{4}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
-\newlabel{count:inc-return}{{5}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
-\newlabel{count:inc-use-LI}{{7}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
-\newlabel{count:read-start}{{12}{9}{Using Recoverable Base Objects: an Example}{algorithm.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces recoverable TAS object $T$, program for process $p$}}{10}{algorithm.3}}
+\newlabel{alg:recoverable-TAS}{{3}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:start}{{2}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:check-doorway}{{3}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:doorway-return-1}{{4}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:set-R[p]-2}{{6}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:close-doorway}{{7}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:tas-primitive}{{8}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:write-to-winner}{{10}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:return-code}{{11}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:set-R[p]-3}{{12}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:start}{{15}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:return-operation-done}{{17}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:check-winner}{{20}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:close-doorway}{{22}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:set-R[p]-4}{{23}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:tas-primitive}{{24}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:wait-lower-id}{{25}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:wait-higher-id}{{27}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:winner-not-overwrite}{{29}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:write-winner}{{30}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:return-code}{{31}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
+\newlabel{tas:rec:set-R[p]-3}{{33}{10}{A Recoverable Test-and-Set Object}{algorithm.3}{}}
 \citation{GolabR16}
 \citation{DBLP:conf/podc/GolabH17}
 \citation{DBLP:conf/wdag/JayantiJ17}
@@ -85,6 +101,13 @@
 \citation{DBLP:conf/spdp/BohannonLS0G95}
 \citation{DBLP:conf/oopsla/ChakrabartiBB14}
 \citation{Taubenfeld:2006:SAC:1211700}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces recoverable Counter object $N$, program for process $p$}}{13}{algorithm.4}}
+\newlabel{alg:recoverable-counter}{{4}{13}{Using Recoverable Base Objects: an Example}{algorithm.4}{}}
+\newlabel{count:inc-start}{{2}{13}{Using Recoverable Base Objects: an Example}{algorithm.4}{}}
+\newlabel{count:inc-invoke-write}{{4}{13}{Using Recoverable Base Objects: an Example}{algorithm.4}{}}
+\newlabel{count:inc-return}{{5}{13}{Using Recoverable Base Objects: an Example}{algorithm.4}{}}
+\newlabel{count:inc-use-LI}{{7}{13}{Using Recoverable Base Objects: an Example}{algorithm.4}{}}
+\newlabel{count:read-start}{{12}{13}{Using Recoverable Base Objects: an Example}{algorithm.4}{}}
 \citation{herlihyWingLinearizability}
 \citation{Aguilera2003StrictLA}
 \citation{herlihy91waitfree}
@@ -104,8 +127,8 @@
 \citation{CoburnCAGGJW-Asplos2011}
 \citation{DBLP:journals/pacmpl/CohenFL17}
 \citation{Erez-et-al-DISC-17}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Related Work}{10}{section.4}}
-\newlabel{sec:related}{{4}{10}{Related Work}{section.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Related Work}{14}{section.4}}
+\newlabel{sec:related}{{4}{14}{Related Work}{section.4}{}}
 \bibstyle{abbrv}
 \bibdata{references}
 \bibcite{DBLP:journals/tcs/AbrahamDHK01}{1}
@@ -133,28 +156,3 @@
 \bibcite{Taubenfeld:2006:SAC:1211700}{23}
 \bibcite{VenkataramanTRC-FAST2011}{24}
 \bibcite{VolosTS-Asplos2011}{25}
-\@writefile{toc}{\contentsline {section}{\numberline {A}A Recoverable Test-and-Set Object}{13}{appendix.A}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces recoverable TAS object $T$, program for process $p$}}{13}{algorithm.4}}
-\newlabel{alg:recoverable-TAS}{{4}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:start}{{2}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:check-doorway}{{3}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:doorway-return-1}{{4}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:set-R[p]-2}{{6}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:close-doorway}{{7}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:tas-primitive}{{8}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:write-to-winner}{{10}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:return-code}{{11}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:set-R[p]-3}{{12}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:start}{{15}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:return-operation-done}{{17}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:check-winner}{{20}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:close-doorway}{{22}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:set-R[p]-4}{{23}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:tas-primitive}{{24}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:wait-lower-id}{{25}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:wait-higher-id}{{27}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:winner-not-overwrite}{{29}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:write-winner}{{30}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:return-code}{{31}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\newlabel{tas:rec:set-R[p]-3}{{33}{13}{A Recoverable Test-and-Set Object}{algorithm.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {B}Proofs Omitted for Lack of Space}{15}{appendix.B}}
